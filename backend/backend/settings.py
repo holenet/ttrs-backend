@@ -31,6 +31,7 @@ ALLOWED_HOSTS = ['18.219.18.137', 'ttrsweb.com']
 # Application definition
 
 INSTALLED_APPS = [
+    'ttrs.apps.TtrsConfig',
     'rest_framework',
     'django.contrib.admin',
     'django.contrib.auth',
