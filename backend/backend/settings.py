@@ -25,7 +25,7 @@ SECRET_KEY = 'pp^_d2^@n=m5alxi0oj9g65-1e9sl!_=c$6&y(33)11%3z)t5k'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['18.219.18.137']
+ALLOWED_HOSTS = ['18.219.18.137', 'ttrsweb.com']
 
 
 # Application definition
