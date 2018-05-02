@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'crawler.apps.CrawlerConfig',
     'ttrs.apps.TtrsConfig',
     'rest_framework',
     'django.contrib.admin',
