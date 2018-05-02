@@ -3,6 +3,9 @@ from django.db import models
 
 
 class Student(User):
+    class Meta:
+        verbose_name = 'Student'
+
     objects = UserManager()
 
     college = models.ForeignKey('ttrs.College', related_name='students', on_delete=models.CASCADE)
