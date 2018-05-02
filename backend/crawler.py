@@ -41,7 +41,7 @@ def crawl(semester):
     errors = []
 
     for i in range(1, 2):
-        print('crawling page {}'.format(i))
+        print('crawling page {}...'.format(i))
         driver.execute_script('fnGotoPage({})'.format(i))
         elts = driver.find_element_by_xpath('//*[@id="content"]/div/div[3]/div[1]/div[2]/table/tbody')
         lecture = None
