@@ -35,7 +35,7 @@ class Course(models.Model):
 
 class Lecture(models.Model):
     course = models.ForeignKey('ttrs.Course', related_name='lectures', on_delete=models.CASCADE)
-    time_slots = models.ManyToManyField('ttrs.TimeSlot', related_name='lectures')
+    time_slots = models.ManyToManyField('ttrs.TimeSlot', related_name='lectures', blank=True)
 
     year = models.PositiveSmallIntegerField()
     semester = models.CharField(max_length=1)
