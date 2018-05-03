@@ -6,10 +6,10 @@ while crawling the site, it updates status of the crawler and
 checks cancel_flag of it.
 If cancel_flag is True, it stops current job and set status to 'canceled'.
 """
-
+import os
 from django.conf import settings
 
-driver_path = os.path.join(settings.BASE_DIR, '../../chromedriver')
+driver_path = os.path.join(settings.BASE_DIR, '../chromedriver')
 
 from django.core.exceptions import ObjectDoesNotExist
 from selenium import webdriver
@@ -35,6 +35,7 @@ semester = '1학기'
 
 
 def run(crawler):
+    print(settings.BASE_DIR)
     options = webdriver.ChromeOptions()
     options.add_argument('headless')
     options.add_argument('window-size=1920x1080')
