@@ -62,6 +62,7 @@ def run(crawler):
             # goes to page i
             driver.execute_script('fnGotoPage({})'.format(i))
             # crawls a table of lectures in current page
+            print('=====================page {}====================='.format(i))
             lectures = crawl(driver)
             # parses given data and saves it in DB
             parse(crawler.year, crawler.semester, lectures)
@@ -100,12 +101,22 @@ def crawl(driver):
                 if lecture is not None:
                     lectures.append(lecture)
 
-                if columns[3].text.split('(')[0] != columns[3].text:
-                    department = columns[3].text.split('(')[0]
-                    major = columns[3].text.split('(')[1].split(')')[0]
+                department_major = columns[3].text
+                if department_major[0] == '(':
+                    department_major = department_major[1:]
+
+                if department_major[-1] == ')':
+                    department_major = department_major[:-1]
+
+                index = department_major.find('(')
+                if index != -1:
+                    department = department_major[:index]
+                    major = department_major[index+1:]
                 else:
-                    department = columns[3].text
+                    department = department_major
                     major = ''
+
+                print('lecture:', columns[8].text, 'department:', department, 'major:', major)
 
                 lecture = {
                     'type': columns[1].text,
