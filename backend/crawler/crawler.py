@@ -6,10 +6,10 @@ while crawling the site, it updates status of the crawler and
 checks cancel_flag of it.
 If cancel_flag is True, it stops current job and set status to 'canceled'.
 """
-import os
 
-dir_path = os.path.dirname(__file__)
-driver_path = os.path.join(dir_path, '../../chromedriver')
+from django.conf import settings
+
+driver_path = os.path.join(settings.BASE_DIR, '../../chromedriver')
 
 from django.core.exceptions import ObjectDoesNotExist
 from selenium import webdriver
@@ -52,10 +52,10 @@ def run(crawler):
     driver.find_element_by_class_name('btn_search_ok').click()
 
     total_cnt = int(driver.find_element_by_xpath('//*[@id="content"]/div/div[3]/div[1]/div[1]/h3/span').text)
-    total_page = (total_cnt // 10) + 1
+    total_page = ((total_cnt-1) // 10) + 1
 
     try:
-        for i in range(1, total_page):
+        for i in range(1, total_page + 1):
             # refresh crawler dynamically
             crawler.refresh_from_db()
             if crawler.cancel_flag:
