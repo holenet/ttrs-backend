@@ -16,5 +16,5 @@ $ git clone https://github.com/SWPP/ttrs-backend.git
 
 ## APIs
 
-## ttrs-backend
+## ttrs-frontend
 https://github.com/SWPP/ttrs-frontend
