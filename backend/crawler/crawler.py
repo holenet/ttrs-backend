@@ -212,13 +212,13 @@ def parse(year, semester, lectures):
     for lecture in lectures:
         try:
             college_instance = College.objects.get(name=lecture['college'])
-        except Exception as e:
+        except ObjectDoesNotExist:
             college_instance = College.objects.create(name=lecture['college'])
             college_instance.save()
 
         try:
             department_instance = Department.objects.get(name=lecture['department'])
-        except Exception as e:
+        except ObjectDoesNotExist:
             if lecture['department'] != '':
                 department_instance = Department.objects.create(college=college_instance,
                                                             name=lecture['department'])
@@ -229,7 +229,7 @@ def parse(year, semester, lectures):
 
         try:
             major_instance = Major.objects.get(name=lecture['major'])
-        except Exception as e:
+        except ObjectDoesNotExist:
             if lecture['major'] != '':
                 major_instance = Major.objects.create(department=department_instance,
                                                   name=lecture['major'])
@@ -241,11 +241,11 @@ def parse(year, semester, lectures):
         try:
             course_instance = Course.objects.get(name=lecture['name'])
 
-        except Exception as e:
+        except ObjectDoesNotExist:
             course_instance = Course.objects.create(code=lecture['code'],
                                                     name=lecture['name'],
                                                     type=lecture['type'],
-                                                    # field=,
+                                                    #TODO: field=,
                                                     grade=int(lecture['grade'][0]),
                                                     credit=int(lecture['credit'].split('-')[0]),
                                                     college=college_instance,
@@ -266,13 +266,11 @@ def parse(year, semester, lectures):
             for time_slot in lecture['time_slots']:
                 building = time_slot['classroom']['building']
                 room_no = time_slot['classroom']['room_no']
-                whole = building + '-' + room_no
                 try:
-                    classroom_instance = Classroom.objects.get(whole=whole)
-                except Exception as e:
-                    if whole != '-':
-                        classroom_instance = Classroom.objects.create(whole=whole,
-                                                                      building=building,
+                    classroom_instance = Classroom.objects.get(building=building, room_no=room_no)
+                except ObjectDoesNotExist:
+                    if building != '' or room_no != '':
+                        classroom_instance = Classroom.objects.create(building=building,
                                                                       room_no=room_no)
                         classroom_instance.save()
                     else:

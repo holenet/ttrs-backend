@@ -86,12 +86,14 @@ class TimeSlot(models.Model):
 
 
 class Classroom(models.Model):
-    whole = models.CharField(max_length=20, unique=True)
     building = models.CharField(max_length=10)
     room_no = models.CharField(max_length=10)
 
     def __str__(self):
-        return '{}'.format(self.whole)
+        return '{}-{}'.format(self.building, self.room_no)
+
+    class Meta:
+        unique_together = ('building', 'room_no')
 
 
 class College(models.Model):
