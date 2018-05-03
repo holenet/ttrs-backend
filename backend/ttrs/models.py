@@ -18,7 +18,7 @@ class Student(User):
 
 class Course(models.Model):
     code = models.CharField(max_length=20)
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, unique=True)
 
     type = models.CharField(max_length=10)
     field = models.CharField(max_length=30, null=True, blank=True)
@@ -91,6 +91,9 @@ class Classroom(models.Model):
 
     def __str__(self):
         return '{}-{}'.format(self.building, self.room_no)
+
+    class Meta:
+        unique_together = ('building', 'room_no')
 
 
 class College(models.Model):
