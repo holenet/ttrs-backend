@@ -35,7 +35,7 @@ class Course(models.Model):
 
 class Lecture(models.Model):
     course = models.ForeignKey('ttrs.Course', related_name='lectures', on_delete=models.CASCADE)
-    time_slots = models.ManyToManyField('ttrs.TimeSlot', related_name='lectures')
+    time_slots = models.ManyToManyField('ttrs.TimeSlot', related_name='lectures', blank=True)
 
     year = models.PositiveSmallIntegerField()
     semester = models.CharField(max_length=1)
@@ -93,7 +93,7 @@ class Classroom(models.Model):
 
 
 class College(models.Model):
-    name = models.CharField(max_length=30)
+    name = models.CharField(max_length=30, unique=True)
 
     def __str__(self):
         return self.name
@@ -101,7 +101,7 @@ class College(models.Model):
 
 class Department(models.Model):
     college = models.ForeignKey('ttrs.College', related_name='departments', on_delete=models.CASCADE)
-    name = models.CharField(max_length=30)
+    name = models.CharField(max_length=30, unique=True)
 
     def __str__(self):
         return self.name
@@ -109,7 +109,7 @@ class Department(models.Model):
 
 class Major(models.Model):
     department = models.ForeignKey('ttrs.Department', related_name='majors', on_delete=models.CASCADE)
-    name = models.CharField(max_length=30)
+    name = models.CharField(max_length=30, unique=True)
 
     def __str__(self):
         return self.name
