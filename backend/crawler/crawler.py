@@ -132,7 +132,7 @@ def crawl(driver):
                     'note': columns[17].text,
                 }
 
-                if not columns[12].text:
+                if not columns[10].text:
                     raise Exception('No time slot')
 
                 classroom = columns[12].text.split('-')
@@ -147,9 +147,13 @@ def crawl(driver):
                         building = classroom[0]
                         room_no = classroom[1] + '-' + classroom[2]
 
-                else:
+                elif len(classroom) == 2:
                     building = classroom[0]
                     room_no = classroom[1]
+
+                else:
+                    building = classroom[0]
+                    room_no = ''
 
                 time_slot = {
                     'time': columns[10].text,
@@ -162,7 +166,7 @@ def crawl(driver):
                 lecture['time_slots'] = [time_slot]
 
             else:
-                if not columns[2].text:
+                if not columns[0].text:
                     raise Exception('No time slot')
 
                 classroom = columns[2].text.split('-')
@@ -177,9 +181,13 @@ def crawl(driver):
                         building = classroom[0]
                         room_no = classroom[1] + '-' + classroom[2]
 
-                else:
+                elif len(classroom) == 2:
                     building = classroom[0]
                     room_no = classroom[1]
+
+                else:
+                    building = classroom[0]
+                    room_no = ''
 
                 time_slot = {
                     'time': columns[0].text,
@@ -255,11 +263,10 @@ def parse(year, semester, lectures):
                 building = time_slot['classroom']['building']
                 room_no = time_slot['classroom']['room_no']
                 whole = building + '-' + room_no
-
                 try:
                     classroom_instance = Classroom.objects.get(whole=whole)
                 except Exception as e:
-                    if whole != '':
+                    if whole != '-':
                         classroom_instance = Classroom.objects.create(whole=whole,
                                                                       building=building,
                                                                       room_no=room_no)
@@ -271,7 +278,6 @@ def parse(year, semester, lectures):
                                                             start_time=time_slot['time'][2:7],
                                                             end_time=time_slot['time'][8:13],
                                                             classroom=classroom_instance)
-
                 timeslot_instance.save()
                 lecture_instance.time_slots.add(timeslot_instance)
 
