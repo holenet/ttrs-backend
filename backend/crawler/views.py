@@ -4,7 +4,7 @@ from rest_framework import generics
 from rest_framework.permissions import IsAdminUser
 
 from .models import Crawler
-from .serializers import CrawlerSerializer
+from .serializers import CrawlerSerializer, CrawlerDetailSerializer
 
 from .crawler import run
 
@@ -22,7 +22,7 @@ class CrawlerList(generics.ListCreateAPIView):
 
 class CrawlerDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Crawler.objects.all()
-    serializer_class = CrawlerSerializer
+    serializer_class = CrawlerDetailSerializer
     permission_classes = (IsAdminUser, )
 
     def perform_update(self, serializer):

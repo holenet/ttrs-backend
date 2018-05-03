@@ -73,15 +73,16 @@ class TimeTable(models.Model):
 
 
 class TimeSlot(models.Model):
-    start = models.DateTimeField()
-    end = models.DateTimeField()
+    day_of_week = models.CharField(max_length=10)
+    start_time = models.CharField(max_length=10)
+    end_time = models.CharField(max_length=10)
 
     classroom = models.ForeignKey('ttrs.Classroom', on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         if self.classroom:
-            return '{}~{} [{}]'.format(self.start.strftime('%a %I:%M'), self.end.strftime('%I:%M'), self.classroom)
-        return '{}~{}'.format(self.start.strftime('%a %I:%M'), self.end.strftime('%I:%M'))
+            return '{} {}~{} [{}]'.format(self.day_of_week, self.start_time, self.end_time, self.classroom)
+        return '{} {}~{}'.format(self.day_of_week, self.start_time, self.end_time)
 
 
 class Classroom(models.Model):

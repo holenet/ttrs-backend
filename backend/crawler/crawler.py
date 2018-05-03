@@ -1,12 +1,18 @@
+"""
+function run is called by view with argument crawler.
+while crawling the site, it updates status of the crawler and
+checks cancel_flag of it.
+If cancel_flag is True, it stops current job and set status to 'canceled'.
+"""
+
 import os
 from django.conf import settings
-
-driver_path = os.path.join(settings.BASE_DIR, '../chromedriver')
-
 from django.core.exceptions import ObjectDoesNotExist
 from selenium import webdriver
 
 from ttrs.models import *
+
+driver_path = os.path.join(settings.BASE_DIR, '../chromedriver')
 
 sid = {'1학기': 1,
        '2학기': 2,
@@ -14,41 +20,37 @@ sid = {'1학기': 1,
        '겨울학기': 4
        }
 
-day = {'월': '2018-05-07T',
-       '화': '2018-05-08T',
-       '수': '2018-05-08T',
-       '목': '2018-05-08T',
-       '금': '2018-05-08T',
-       '토': '2018-05-08T',
-       '일': '2018-05-08T',
-       }
-
-semester = '1학기'
-
 
 def run(crawler):
-    print(settings.BASE_DIR)
-    options = webdriver.ChromeOptions()
-    options.add_argument('headless')
-    options.add_argument('window-size=1920x1080')
-    options.add_argument('disable-gpu')
-    options.add_argument('User-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KTHML, like Gecko) Chrome/61.0.3163.100 Safari/537.36')
-
-
-    driver = webdriver.Chrome(driver_path, chrome_options=options)
-    driver.implicitly_wait(3)
-
-    driver.get('https://sugang.snu.ac.kr/sugang/cc/cc100.action')
-    driver.find_element_by_id('detail_button').click()
-    driver.find_element_by_xpath('//*[@id="srchOpenShtm"]/option[{}]'.format(sid[semester])).click()
-    driver.find_element_by_xpath('//*[@id="srchOpenSubmattCorsFg"]/option[2]').click()
-    driver.find_element_by_class_name('btn_search_ok').click()
-
-    total_cnt = int(driver.find_element_by_xpath('//*[@id="content"]/div/div[3]/div[1]/div[1]/h3/span').text)
-    total_page = ((total_cnt-1) // 10) + 1
-
     try:
-        for i in range(1, total_page + 1):
+        options = webdriver.ChromeOptions()
+        options.add_argument('headless')
+        options.add_argument('window-size=1920x1080')
+        options.add_argument('disable-gpu')
+        options.add_argument('User-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KTHML, like Gecko) Chrome/61.0.3163.100 Safari/537.36')
+
+        driver = webdriver.Chrome(driver_path, chrome_options=options)
+        driver.implicitly_wait(3)
+
+        driver.get('https://sugang.snu.ac.kr/sugang/cc/cc100.action')
+        driver.implicitly_wait(1)
+        driver.find_element_by_id('detail_button').click()
+        driver.implicitly_wait(1)
+        driver.find_element_by_xpath('//*[@id="srchOpenSchyy"]').clear()
+        driver.implicitly_wait(1)
+        driver.find_element_by_xpath('//*[@id="srchOpenSchyy"]').send_keys(crawler.year)
+        driver.implicitly_wait(1)
+        driver.find_element_by_xpath('//*[@id="srchOpenShtm"]/option[{}]'.format(sid[crawler.semester])).click()
+        driver.implicitly_wait(1)
+        driver.find_element_by_xpath('//*[@id="srchOpenSubmattCorsFg"]/option[2]').click()
+        driver.implicitly_wait(1)
+        driver.find_element_by_class_name('btn_search_ok').click()
+        driver.implicitly_wait(1)
+
+        total_cnt = int(driver.find_element_by_xpath('//*[@id="content"]/div/div[3]/div[1]/div[1]/h3/span').text)
+        total_page = ((total_cnt-1)//10)+1
+
+        for i in range(1, total_page+1):
             # refresh crawler dynamically
             crawler.refresh_from_db()
             if crawler.cancel_flag:
@@ -62,7 +64,7 @@ def run(crawler):
             # crawls a table of lectures in current page
             lectures = crawl(driver)
             # parses given data and saves it in DB
-            parse(lectures)
+            parse(crawler.year, crawler.semester, lectures)
 
             # change status of crawler and save
             crawler.refresh_from_db()
@@ -98,7 +100,6 @@ def crawl(driver):
                     lectures.append(lecture)
                     # print(i, lecture)
                 lecture = {
-                    'semester': semester,
                     'type': columns[1].text,
                     'name': columns[8].text,
                     'department': columns[3].text,
@@ -141,7 +142,7 @@ def crawl(driver):
     return lectures
 
 
-def parse(lectures):
+def parse(year, semester, lectures):
     for lecture in lectures:
         try:
             college_instance = College.objects.get(name=lecture['college'])
@@ -153,7 +154,7 @@ def parse(lectures):
             department_instance = Department.objects.get(name=lecture['department'])
         except Exception as e:
             department_instance = Department.objects.create(college=college_instance,
-                                                   name=lecture['department'])
+                                                            name=lecture['department'])
             department_instance.save()
 
         course_instance = Course.objects.create(code=lecture['code'],
@@ -169,8 +170,8 @@ def parse(lectures):
         course_instance.save()
 
         lecture_instance = Lecture.objects.create(course=course_instance,
-                                                  year=2018,
-                                                  semester=lecture['semester'],
+                                                  year=year,
+                                                  semester=semester,
                                                   number=lecture['number'],
                                                   instructor=lecture['instructor'],
                                                   note='')
@@ -182,9 +183,11 @@ def parse(lectures):
                                                               room_no=time_slot['classroom']['room_no'])
                 classroom_instance.save()
 
-                timeslot_instance = TimeSlot.objects.create(start=day[time_slot['time'][0]] + time_slot['time'][2:7] + 'Z',
-                                                            end=day[time_slot['time'][0]] + time_slot['time'][8:13] + 'Z',
-                                                            classroom=cr)
+                timeslot_instance = TimeSlot.objects.create(day_of_week=time_slot['time'][0],
+                                                            start_time=time_slot['time'][2:7],
+                                                            end_time=time_slot['time'][8:13],
+                                                            classroom=classroom_instance)
+
                 timeslot_instance.save()
                 lecture_instance.time_slots.add(timeslot_instance)
 
