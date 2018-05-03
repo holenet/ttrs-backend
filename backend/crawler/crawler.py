@@ -50,7 +50,7 @@ def run(crawler):
         total_cnt = int(driver.find_element_by_xpath('//*[@id="content"]/div/div[3]/div[1]/div[1]/h3/span').text)
         total_page = ((total_cnt-1)//10)+1
 
-        for i in range(1, total_page+1):
+        for i in range(61, total_page+1):
             # refresh crawler dynamically
             crawler.refresh_from_db()
             if crawler.cancel_flag:
@@ -102,18 +102,22 @@ def crawl(driver):
                     lectures.append(lecture)
 
                 department_major = columns[3].text
-                if department_major[0] == '(':
-                    department_major = department_major[1:]
+                if department_major != '':
+                    if department_major[0] == '(':
+                        department_major = department_major[1:]
 
-                if department_major[-1] == ')':
-                    department_major = department_major[:-1]
+                    if department_major[-1] == ')':
+                        department_major = department_major[:-1]
 
-                index = department_major.find('(')
-                if index != -1:
-                    department = department_major[:index]
-                    major = department_major[index+1:]
+                    index = department_major.find('(')
+                    if index != -1:
+                        department = department_major[:index]
+                        major = department_major[index+1:]
+                    else:
+                        department = department_major
+                        major = ''
                 else:
-                    department = department_major
+                    department = ''
                     major = ''
 
                 print('lecture:', columns[8].text, 'department:', department, 'major:', major)
