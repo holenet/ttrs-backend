@@ -95,15 +95,24 @@ def crawl(driver):
     for row in elts.find_elements_by_tag_name('tr'):
         try:
             columns = row.find_elements_by_tag_name('td')
+
             if not columns[0].text:
                 if lecture is not None:
                     lectures.append(lecture)
-                    # print(i, lecture)
+
+                if columns[3].text.split('(')[0] != columns[3].text:
+                    department = columns[3].text.split('(')[0]
+                    major = columns[3].text.split('(')[1].split(')')[0]
+                else:
+                    department = columns[3].text
+                    major = ''
+
                 lecture = {
                     'type': columns[1].text,
                     'name': columns[8].text,
-                    'department': columns[3].text,
                     'college': columns[2].text,
+                    'department': department,
+                    'major': major,
                     'grade': columns[5].text,
                     'instructor': columns[13].text,
                     'code': columns[6].text,
@@ -113,11 +122,28 @@ def crawl(driver):
 
                 if not columns[12].text:
                     raise Exception('No time slot')
+
+                classroom = columns[12].text.split('-')
+                if len(classroom) == 3:
+                    #print(classroom)
+
+                    if len(classroom[1]) == 1:
+                        building = classroom[0] + '-' + classroom[1]
+                        room_no = classroom[2]
+
+                    else:
+                        building = classroom[0]
+                        room_no = classroom[1] + '-' + classroom[2]
+
+                else:
+                    building = classroom[0]
+                    room_no = classroom[1]
+
                 time_slot = {
                     'time': columns[10].text,
                     'classroom': {
-                        'building': columns[12].text.split('-')[0],
-                        'room_no': columns[12].text.split('-')[1],
+                        'building': building,
+                        'room_no': room_no,
                     }
                 }
 
@@ -127,11 +153,27 @@ def crawl(driver):
                 if not columns[2].text:
                     raise Exception('No time slot')
 
+                classroom = columns[2].text.split('-')
+                if len(classroom) == 3:
+                    #print(classroom)
+
+                    if len(classroom[1]) == 1:
+                        building = classroom[0] + '-' + classroom[1]
+                        room_no = classroom[2]
+
+                    else:
+                        building = classroom[0]
+                        room_no = classroom[1] + '-' + classroom[2]
+
+                else:
+                    building = classroom[0]
+                    room_no = classroom[1]
+
                 time_slot = {
                     'time': columns[0].text,
                     'classroom': {
-                        'building': columns[2].text.split('-')[0],
-                        'room_no': columns[2].text.split('-')[1],
+                        'building': building,
+                        'room_no': room_no,
                     }
                 }
 
@@ -153,21 +195,40 @@ def parse(year, semester, lectures):
         try:
             department_instance = Department.objects.get(name=lecture['department'])
         except Exception as e:
-            department_instance = Department.objects.create(college=college_instance,
+            if lecture['department'] != '':
+                department_instance = Department.objects.create(college=college_instance,
                                                             name=lecture['department'])
-            department_instance.save()
+                department_instance.save()
 
-        course_instance = Course.objects.create(code=lecture['code'],
-                                                name=lecture['name'],
-                                                type=lecture['type'],
-                                                # field=,
-                                                grade=int(lecture['grade'][0]),
-                                                credit=int(lecture['credit'].split('-')[0]),
-                                                college=college_instance,
-                                                department=department_instance,
-                                                # major=
-                                                )
-        course_instance.save()
+            else:
+                department_instance = None
+
+        try:
+            major_instance = Major.objects.get(name=lecture['major'])
+        except Exception as e:
+            if lecture['major'] != '':
+                major_instance = Major.objects.create(department=department_instance,
+                                                  name=lecture['major'])
+                major_instance.save()
+
+            else:
+                major_instance = None
+
+        try:
+            course_instance = Course.objects.get(name=lecture['name'])
+
+        except Exception as e:
+            course_instance = Course.objects.create(code=lecture['code'],
+                                                    name=lecture['name'],
+                                                    type=lecture['type'],
+                                                    # field=,
+                                                    grade=int(lecture['grade'][0]),
+                                                    credit=int(lecture['credit'].split('-')[0]),
+                                                    college=college_instance,
+                                                    department=department_instance,
+                                                    major=major_instance,
+                                                    )
+            course_instance.save()
 
         lecture_instance = Lecture.objects.create(course=course_instance,
                                                   year=year,
@@ -179,9 +240,15 @@ def parse(year, semester, lectures):
         # It really is absurd, but there exists lectures without any time slot.
         try:
             for time_slot in lecture['time_slots']:
-                classroom_instance = Classroom.objects.create(building=time_slot['classroom']['building'],
-                                                              room_no=time_slot['classroom']['room_no'])
-                classroom_instance.save()
+                try:
+                    classroom_instance = Classroom.objects.get(whole=time_slot['classroom']['building'] + '-'
+                                                                     + time_slot['classroom']['room_no'])
+                except Exception as e:
+                    classroom_instance = Classroom.objects.create(whole=time_slot['classroom']['building'] + '-'
+                                                                        + time_slot['classroom']['room_no'],
+                                                                  building=time_slot['classroom']['building'],
+                                                                  room_no=time_slot['classroom']['room_no'])
+                    classroom_instance.save()
 
                 timeslot_instance = TimeSlot.objects.create(day_of_week=time_slot['time'][0],
                                                             start_time=time_slot['time'][2:7],
