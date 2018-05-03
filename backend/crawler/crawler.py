@@ -129,6 +129,7 @@ def crawl(driver):
                     'code': columns[6].text,
                     'number': columns[7].text,
                     'credit': columns[9].text,
+                    'note': columns[17].text,
                 }
 
                 if not columns[12].text:
@@ -246,20 +247,25 @@ def parse(year, semester, lectures):
                                                   semester=semester,
                                                   number=lecture['number'],
                                                   instructor=lecture['instructor'],
-                                                  note='')
+                                                  note=lecture['note'])
 
         # It really is absurd, but there exists lectures without any time slot.
         try:
             for time_slot in lecture['time_slots']:
+                building = time_slot['classroom']['building']
+                room_no = time_slot['classroom']['room_no']
+                whole = building + '-' + room_no
+
                 try:
-                    classroom_instance = Classroom.objects.get(whole=time_slot['classroom']['building'] + '-'
-                                                                     + time_slot['classroom']['room_no'])
+                    classroom_instance = Classroom.objects.get(whole=whole)
                 except Exception as e:
-                    classroom_instance = Classroom.objects.create(whole=time_slot['classroom']['building'] + '-'
-                                                                        + time_slot['classroom']['room_no'],
-                                                                  building=time_slot['classroom']['building'],
-                                                                  room_no=time_slot['classroom']['room_no'])
-                    classroom_instance.save()
+                    if whole != '':
+                        classroom_instance = Classroom.objects.create(whole=whole,
+                                                                      building=building,
+                                                                      room_no=room_no)
+                        classroom_instance.save()
+                    else:
+                        classroom_instance = None
 
                 timeslot_instance = TimeSlot.objects.create(day_of_week=time_slot['time'][0],
                                                             start_time=time_slot['time'][2:7],
@@ -270,4 +276,4 @@ def parse(year, semester, lectures):
                 lecture_instance.time_slots.add(timeslot_instance)
 
         except Exception as e:
-            print(e)
+            print('parse', e)
