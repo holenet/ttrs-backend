@@ -1,11 +1,3 @@
-"""
-IMPORTANT: It is a mock crawler.
-
-function run is called by view with argument crawler.
-while crawling the site, it updates status of the crawler and
-checks cancel_flag of it.
-If cancel_flag is True, it stops current job and set status to 'canceled'.
-"""
 import os
 from django.conf import settings
 
@@ -152,31 +144,31 @@ def crawl(driver):
 def parse(lectures):
     for lecture in lectures:
         try:
-            college = College.objects.get(name=lecture['college'])
+            college_instance = College.objects.get(name=lecture['college'])
         except Exception as e:
-            college = College.objects.create(name=lecture['college'])
-            college.save()
+            college_instance = College.objects.create(name=lecture['college'])
+            college_instance.save()
 
         try:
-            department = Department.objects.get(name=lecture['department'])
+            department_instance = Department.objects.get(name=lecture['department'])
         except Exception as e:
-            department = Department.objects.create(college=college,
+            department_instance = Department.objects.create(college=college_instance,
                                                    name=lecture['department'])
-            department.save()
+            department_instance.save()
 
-        course = Course.objects.create(code=lecture['code'],
-                                      name=lecture['name'],
-                                      type=lecture['type'],
-                                      # field=,
-                                      grade=int(lecture['grade'][0]),
-                                      credit=int(lecture['credit'].split('-')[0]),
-                                      college=college,
-                                      department=department,
-                                      # major=
-                                      )
-        course.save()
+        course_instance = Course.objects.create(code=lecture['code'],
+                                                name=lecture['name'],
+                                                type=lecture['type'],
+                                                # field=,
+                                                grade=int(lecture['grade'][0]),
+                                                credit=int(lecture['credit'].split('-')[0]),
+                                                college=college_instance,
+                                                department=department_instance,
+                                                # major=
+                                                )
+        course_instance.save()
 
-        lecture_instance = Lecture.objects.create(course=c,
+        lecture_instance = Lecture.objects.create(course=course_instance,
                                                   year=2018,
                                                   semester=lecture['semester'],
                                                   number=lecture['number'],
@@ -186,15 +178,15 @@ def parse(lectures):
         # It really is absurd, but there exists lectures without any time slot.
         try:
             for time_slot in lecture['time_slots']:
-                cr = Classroom.objects.create(building=time_slot['classroom']['building'],
-                                              room_no=time_slot['classroom']['room_no'])
-                cr.save()
+                classroom_instance = Classroom.objects.create(building=time_slot['classroom']['building'],
+                                                              room_no=time_slot['classroom']['room_no'])
+                classroom_instance.save()
 
-                ts = TimeSlot.objects.create(start=day[time_slot['time'][0]] + time_slot['time'][2:7] + 'Z',
-                                             end=day[time_slot['time'][0]] + time_slot['time'][8:13] + 'Z',
-                                             classroom=cr)
-                ts.save()
-                lecture_instance.time_slots.add(ts)
+                timeslot_instance = TimeSlot.objects.create(start=day[time_slot['time'][0]] + time_slot['time'][2:7] + 'Z',
+                                                            end=day[time_slot['time'][0]] + time_slot['time'][8:13] + 'Z',
+                                                            classroom=cr)
+                timeslot_instance.save()
+                lecture_instance.time_slots.add(timeslot_instance)
 
         except Exception as e:
             print(e)
