@@ -164,24 +164,24 @@ def parse(lectures):
                                                    name=lecture['department'])
             department.save()
 
-        c = Course.objects.create(code=lecture['code'],
-                                  name=lecture['name'],
-                                  type=lecture['type'],
-                                  # field=,
-                                  grade=int(lecture['grade'][0]),
-                                  credit=int(lecture['credit'].split('-')[0]),
-                                  college=college,
-                                  department=department,
-                                  # major=
-                                  )
-        c.save()
+        course = Course.objects.create(code=lecture['code'],
+                                      name=lecture['name'],
+                                      type=lecture['type'],
+                                      # field=,
+                                      grade=int(lecture['grade'][0]),
+                                      credit=int(lecture['credit'].split('-')[0]),
+                                      college=college,
+                                      department=department,
+                                      # major=
+                                      )
+        course.save()
 
-        l = Lecture.objects.create(course=c,
-                                   year=2018,
-                                   semester=lecture['semester'],
-                                   number=lecture['number'],
-                                   instructor=lecture['instructor'],
-                                   note='')
+        lecture_instance = Lecture.objects.create(course=c,
+                                                  year=2018,
+                                                  semester=lecture['semester'],
+                                                  number=lecture['number'],
+                                                  instructor=lecture['instructor'],
+                                                  note='')
 
         # It really is absurd, but there exists lectures without any time slot.
         try:
@@ -194,7 +194,7 @@ def parse(lectures):
                                              end=day[time_slot['time'][0]] + time_slot['time'][8:13] + 'Z',
                                              classroom=cr)
                 ts.save()
-                l.time_slots.add(ts)
+                lecture_instance.time_slots.add(ts)
 
         except Exception as e:
             print(e)
