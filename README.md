@@ -15,6 +15,26 @@ $ git clone https://github.com/SWPP/ttrs-backend.git
 ## Notice
 
 ## APIs
+For the specification, please see **Issue**
+#### Student
+- **student/**
+  - *get*: get student list
+  - *post*: create new student
+- **student/\<int:pk\>/**
+  - *get*: get the student
+  - *put*: replace information of the student
+  - *patch*: update information of the student
+  - *delete*: delete the student 
+
+#### Crawler
+**Note:** this api is only for the *admin users*
+- **crawlers/**
+  - *get*: get crawler list
+  - *post*: create new crawler and start
+- **crawlers/\<int:pk\>/**
+  - *get*: get the crawler
+  - *put/patch*: cancel the crawler
+  - *delete*: delete the crawler
 
 ## ttrs-frontend
 https://github.com/SWPP/ttrs-frontend
