@@ -1,26 +1,24 @@
+"""
+function run is called by view with argument crawler.
+while crawling the site, it updates status of the crawler and
+checks cancel_flag of it.
+If cancel_flag is True, it stops current job and set status to 'canceled'.
+"""
+
 import os
 from django.conf import settings
-
-driver_path = os.path.join(settings.BASE_DIR, '../chromedriver')
-
 from django.core.exceptions import ObjectDoesNotExist
 from selenium import webdriver
 
 from ttrs.models import *
 
+
+driver_path = os.path.join(settings.BASE_DIR, '../chromedriver')
+
 sid = {'1학기': 1,
        '2학기': 2,
        '여름학기': 3,
        '겨울학기': 4
-       }
-
-day = {'월': '2018-05-07T',
-       '화': '2018-05-08T',
-       '수': '2018-05-08T',
-       '목': '2018-05-08T',
-       '금': '2018-05-08T',
-       '토': '2018-05-08T',
-       '일': '2018-05-08T',
        }
 
 semester = '1학기'
@@ -182,9 +180,11 @@ def parse(lectures):
                                                               room_no=time_slot['classroom']['room_no'])
                 classroom_instance.save()
 
-                timeslot_instance = TimeSlot.objects.create(start=day[time_slot['time'][0]] + time_slot['time'][2:7] + 'Z',
-                                                            end=day[time_slot['time'][0]] + time_slot['time'][8:13] + 'Z',
-                                                            classroom=cr)
+                timeslot_instance = TimeSlot.objects.create(day_of_week=time_slot['time'][0],
+                                                            start_time=time_slot['time'][2:7],
+                                                            end_time=time_slot['time'][8:13],
+                                                            classroom=classroom_instance)
+
                 timeslot_instance.save()
                 lecture_instance.time_slots.add(timeslot_instance)
 
