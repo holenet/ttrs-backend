@@ -13,6 +13,13 @@ $ git clone https://github.com/SWPP/ttrs-backend.git
 ```
 
 ## Notice
+#### Crawling in server machine
+Installing chromium-browser and downgrading selenium seems to work.
+```console
+sudo apt-get install chromium-browser
+pip3 uninstall selenium
+pip3 install selenium==3.10
+```
 
 ## APIs
 For the specification, please see **Issue**
