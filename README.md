@@ -23,7 +23,7 @@ $ pip3 install selenium==3.10
 
 ## APIs
 For the specification, please see **Issue**
-#### Student
+#### [Student](#11)
 - **student/**
   - *get*: get student list
   - *post*: create new student
