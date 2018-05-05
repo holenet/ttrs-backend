@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
+from django.core.exceptions import ValidationError as DjangoValidationError
 
 from .models import Student
 
@@ -15,6 +16,16 @@ class StudentSerializer(serializers.ModelSerializer):
             'email': {'required': True, 'allow_null': False, 'allow_blank': False}
         }
 
+    def validate_email(self, value):
+        if value.split('@')[1] != 'snu.ac.kr':
+            raise ValidationError("The host must be 'snu.ac.kr'.")
+        return value
+
+    def validate_grade(self, value):
+        if value not in range(1, 5):
+            raise ValidationError("The grade must be a integer of 1~4")
+        return value
+
     def get_field_value(self, data, key):
         if key in data:
             return data[key]
@@ -23,7 +34,7 @@ class StudentSerializer(serializers.ModelSerializer):
         return None
 
     def validate(self, data):
-        # college, department, major belonging validations
+        # belonging validations of college-department, department-major
         errors = []
         college = self.get_field_value(data, 'college')
         department = self.get_field_value(data, 'department')
@@ -35,13 +46,16 @@ class StudentSerializer(serializers.ModelSerializer):
                 if department and major and department.id != major.department_id:
                     errors.append('The major must belong to the department')
         if errors:
-            raise ValidationError(errors)
+            raise ValidationError({'belonging': errors})
 
         # password hashing
         if 'password' not in data:
             # password not changed
             return data
         tmp_user = User(username=data['username'], email=data['email'])
-        validate_password(data['password'], user=tmp_user)
+        try:
+            validate_password(data['password'], user=tmp_user)
+        except DjangoValidationError as ve:
+            raise ValidationError({'password': ve.messages})
         data['password'] = make_password(data['password'])
         return data
