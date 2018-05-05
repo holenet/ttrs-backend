@@ -16,15 +16,15 @@ class StudentSerializer(serializers.ModelSerializer):
             'email': {'required': True, 'allow_null': False, 'allow_blank': False}
         }
 
-    def validate_email(self, value):
-        if value.split('@')[1] != 'snu.ac.kr':
+    def validate_email(self, email):
+        if email.split('@')[1] !='snu.ac.kr':
             raise ValidationError("The host must be 'snu.ac.kr'.")
-        return value
+        return email
 
-    def validate_grade(self, value):
-        if value not in range(1, 5):
+    def validate_grade(self, grade):
+        if grade not in range(1, 5):
             raise ValidationError("The grade must be a integer of 1~4")
-        return value
+        return grade
 
     def get_field_value(self, data, key):
         if key in data:
@@ -39,12 +39,12 @@ class StudentSerializer(serializers.ModelSerializer):
         college = self.get_field_value(data, 'college')
         department = self.get_field_value(data, 'department')
         major = self.get_field_value(data, 'major')
-        if department is not None:
-            if college and department and college.id != department.college_id:
+        if department:
+            if not college or college.id != department.college_id:
                 errors.append('The department must belong to the college')
-            if major is not None:
-                if department and major and department.id != major.department_id:
-                    errors.append('The major must belong to the department')
+        if major is not None:
+            if not department or department.id != major.department_id:
+                errors.append('The major must belong to the department')
         if errors:
             raise ValidationError({'belonging': errors})
 
