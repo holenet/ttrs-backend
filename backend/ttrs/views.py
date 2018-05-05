@@ -1,3 +1,5 @@
+from django.forms import model_to_dict
+from django.http import QueryDict
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -21,11 +23,6 @@ class StudentDetail(generics.RetrieveUpdateDestroyAPIView):
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
-        # add username, email from instance for the password validation
-        if 'username' not in request.data:
-            request.data['username'] = instance.username
-        if 'email' not in request.data:
-            request.data['email'] = instance.email
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
