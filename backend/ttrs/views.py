@@ -48,6 +48,12 @@ class CourseList(FilterAPIView, generics.ListAPIView):
     filter_options = ('code', 'name', 'type', 'field', 'grade', 'credit', 'college_id', 'department_id', 'major_id')
 
 
+class CourseDetail(generics.RetrieveAPIView):
+    queryset = Course.objects.all()
+    serializer_class = CourseSerializer
+    permission_classes = (IsAuthenticated,)
+
+
 class CollegeList(generics.ListAPIView):
     queryset = College.objects.all()
     serializer_class = CollegeSerializer
