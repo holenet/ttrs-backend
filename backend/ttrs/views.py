@@ -1,12 +1,10 @@
-from django.forms import model_to_dict
-from django.http import QueryDict
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
 from .permissions import IsTheStudent
-from .serializers import StudentSerializer, CollegeSerializer, DepartmentSerializer
-from .models import Student, College, Department
+from .serializers import StudentSerializer, CollegeSerializer, DepartmentSerializer, MajorSerializer
+from .models import Student, College, Department, Major
 
 
 class StudentList(generics.ListCreateAPIView):
@@ -44,4 +42,10 @@ class CollegeList(generics.ListAPIView):
 class DepartmentList(generics.ListAPIView):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
+    permission_classes = (IsAuthenticated,)
+
+
+class MajorList(generics.ListAPIView):
+    queryset = Major.objects.all()
+    serializer_class = MajorSerializer
     permission_classes = (IsAuthenticated,)

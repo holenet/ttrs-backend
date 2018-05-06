@@ -5,7 +5,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from django.core.exceptions import ValidationError as DjangoValidationError
 
-from .models import Student, College, Department
+from .models import Student, College, Department, Major
 
 
 class StudentSerializer(serializers.ModelSerializer):
@@ -71,3 +71,14 @@ class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Department
         fields = '__all__'
+
+
+class MajorSerializer(serializers.ModelSerializer):
+    college = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Major
+        fields = '__all__'
+
+    def get_college(self, major):
+        return major.department.college_id
