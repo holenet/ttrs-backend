@@ -1,4 +1,5 @@
 from django.urls import path
+from rest_framework.urlpatterns import format_suffix_patterns
 
 from . import views
 
@@ -16,3 +17,5 @@ urlpatterns = [
     path('majors/', views.MajorList.as_view()),
     path('majors/<int:pk>/', views.MajorDetail.as_view()),
 ]
+
+urlpatterns += format_suffix_patterns(urlpatterns)
