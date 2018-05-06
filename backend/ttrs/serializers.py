@@ -82,3 +82,11 @@ class MajorSerializer(serializers.ModelSerializer):
 
     def get_college(self, major):
         return major.department.college_id
+
+
+class CollegeDetailSerializer(CollegeSerializer):
+    departments = DepartmentSerializer(many=True, read_only=True)
+
+
+class DepartmentDetailSerializer(DepartmentSerializer):
+    majors = MajorSerializer(many=True, read_only=True)

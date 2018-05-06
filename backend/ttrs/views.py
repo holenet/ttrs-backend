@@ -3,7 +3,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
 from .permissions import IsTheStudent
-from .serializers import StudentSerializer, CollegeSerializer, DepartmentSerializer, MajorSerializer
+from .serializers import StudentSerializer, CollegeSerializer, DepartmentSerializer, MajorSerializer, \
+    CollegeDetailSerializer, DepartmentDetailSerializer
 from .models import Student, College, Department, Major
 
 
@@ -39,13 +40,31 @@ class CollegeList(generics.ListAPIView):
     permission_classes = (IsAuthenticated,)
 
 
+class CollegeDetail(generics.RetrieveAPIView):
+    queryset = College.objects.all()
+    serializer_class = CollegeDetailSerializer
+    permission_classes = (IsAuthenticated,)
+
+
 class DepartmentList(generics.ListAPIView):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
     permission_classes = (IsAuthenticated,)
 
 
+class DepartmentDetail(generics.RetrieveAPIView):
+    queryset = Department.objects.all()
+    serializer_class = DepartmentDetailSerializer
+    permission_classes = (IsAuthenticated,)
+
+
 class MajorList(generics.ListAPIView):
+    queryset = Major.objects.all()
+    serializer_class = MajorSerializer
+    permission_classes = (IsAuthenticated,)
+
+
+class MajorDetail(generics.RetrieveAPIView):
     queryset = Major.objects.all()
     serializer_class = MajorSerializer
     permission_classes = (IsAuthenticated,)
