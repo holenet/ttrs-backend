@@ -46,7 +46,13 @@ class CourseDetail(generics.RetrieveAPIView):
 
 
 class LectureList(FilterAPIView, generics.ListAPIView):
-    queryset = Lecture.objects.all().filter()
+    queryset = Lecture.objects.all()
+    serializer_class = LectureSerializer
+    permission_classes = (IsAuthenticated,)
+
+
+class LectureDetail(generics.RetrieveAPIView):
+    queryset = Lecture.objects.all()
     serializer_class = LectureSerializer
     permission_classes = (IsAuthenticated,)
 
