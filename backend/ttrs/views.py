@@ -3,30 +3,22 @@ from rest_framework.permissions import IsAuthenticated
 
 from .permissions import IsTheStudent
 from .serializers import StudentSerializer, CollegeSerializer, DepartmentSerializer, MajorSerializer, \
-    CollegeDetailSerializer, DepartmentDetailSerializer, CourseSerializer
-from .models import Student, College, Department, Major, Course
+    CollegeDetailSerializer, DepartmentDetailSerializer, CourseSerializer, LectureSerializer
+from .models import Student, College, Department, Major, Course, Lecture
 
 
 class FilterAPIView(generics.GenericAPIView):
     """
     Supporting custom APIView class for filtering queryset based on query_params.
 
-    Extend this class and set 'filter_options', a class variable of 'tuple'
-    which defines list of keys you want to filter.
-    Each element of 'filter_options' must be valid key for function 'QuerySet.filter'.
-
-    Note: Default 'filter_options' is empty, therefore it filters nothing.
+    By extend this class, the APIView will automatically filter queryset if the request
+    has query_params.
+    Keys of the query_params MUST be a valid key of the function 'QuerySet.filter', or
+    that param will be ignored.
     """
 
-    filter_options = ()
-
     def get_queryset(self):
-        filter_kwargs = {}
-        for option in self.filter_options:
-            value = self.request.query_params.get(option, None)
-            if value is not None:
-                filter_kwargs[option] = value
-        return self.queryset.filter(**filter_kwargs)
+        return self.queryset.filter(**self.request.query_params.dict())
 
 
 class StudentList(generics.ListCreateAPIView):
@@ -45,12 +37,17 @@ class CourseList(FilterAPIView, generics.ListAPIView):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
     permission_classes = (IsAuthenticated,)
-    filter_options = ('code', 'name', 'type', 'field', 'grade', 'credit', 'college_id', 'department_id', 'major_id')
 
 
 class CourseDetail(generics.RetrieveAPIView):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
+    permission_classes = (IsAuthenticated,)
+
+
+class LectureList(FilterAPIView, generics.ListAPIView):
+    queryset = Lecture.objects.all().filter()
+    serializer_class = LectureSerializer
     permission_classes = (IsAuthenticated,)
 
 
@@ -70,7 +67,6 @@ class DepartmentList(FilterAPIView, generics.ListAPIView):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
     permission_classes = (IsAuthenticated,)
-    filter_options = ('college_id',)
 
 
 class DepartmentDetail(generics.RetrieveAPIView):
@@ -83,7 +79,6 @@ class MajorList(FilterAPIView, generics.ListAPIView):
     queryset = Major.objects.all()
     serializer_class = MajorSerializer
     permission_classes = (IsAuthenticated,)
-    filter_options = ('department__college_id', 'department_id')
 
 
 class MajorDetail(generics.RetrieveAPIView):
