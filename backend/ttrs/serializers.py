@@ -5,7 +5,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from django.core.exceptions import ValidationError as DjangoValidationError
 
-from .models import Student
+from .models import Student, College
 
 
 class StudentSerializer(serializers.ModelSerializer):
@@ -17,7 +17,7 @@ class StudentSerializer(serializers.ModelSerializer):
         }
 
     def validate_email(self, email):
-        if email.split('@')[1] !='snu.ac.kr':
+        if email.split('@')[1] != 'snu.ac.kr':
             raise ValidationError("The host must be 'snu.ac.kr'.")
         return email
 
@@ -59,3 +59,9 @@ class StudentSerializer(serializers.ModelSerializer):
             raise ValidationError({'password': ve.messages})
         data['password'] = make_password(data['password'])
         return data
+
+
+class CollegeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = College
+        fields = '__all__'
