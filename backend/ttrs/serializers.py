@@ -5,7 +5,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from django.core.exceptions import ValidationError as DjangoValidationError
 
-from .models import Student, College, Department, Major
+from .models import Student, College, Department, Major, Course
 
 
 class StudentSerializer(serializers.ModelSerializer):
@@ -59,6 +59,12 @@ class StudentSerializer(serializers.ModelSerializer):
             raise ValidationError({'password': ve.messages})
         data['password'] = make_password(data['password'])
         return data
+
+
+class CourseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Course
+        fields = '__all__'
 
 
 class CollegeSerializer(serializers.ModelSerializer):
