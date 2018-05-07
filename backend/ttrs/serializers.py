@@ -5,7 +5,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from django.core.exceptions import ValidationError as DjangoValidationError
 
-from .models import Student
+from .models import Student, College, Department, Major, Course, Lecture
 
 
 class StudentSerializer(serializers.ModelSerializer):
@@ -17,14 +17,9 @@ class StudentSerializer(serializers.ModelSerializer):
         }
 
     def validate_email(self, email):
-        if email.split('@')[1] !='snu.ac.kr':
+        if email.split('@')[1] != 'snu.ac.kr':
             raise ValidationError("The host must be 'snu.ac.kr'.")
         return email
-
-    def validate_grade(self, grade):
-        if grade not in range(1, 5):
-            raise ValidationError("The grade must be a integer of 1~4")
-        return grade
 
     def get_field_value(self, data, key):
         if key in data:
@@ -59,3 +54,46 @@ class StudentSerializer(serializers.ModelSerializer):
             raise ValidationError({'password': ve.messages})
         data['password'] = make_password(data['password'])
         return data
+
+
+class CourseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Course
+        fields = '__all__'
+
+
+class LectureSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lecture
+        fields = '__all__'
+
+
+class CollegeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = College
+        fields = '__all__'
+
+
+class DepartmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Department
+        fields = '__all__'
+
+
+class MajorSerializer(serializers.ModelSerializer):
+    college = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Major
+        fields = '__all__'
+
+    def get_college(self, major):
+        return major.department.college_id
+
+
+class CollegeDetailSerializer(CollegeSerializer):
+    departments = DepartmentSerializer(many=True, read_only=True)
+
+
+class DepartmentDetailSerializer(DepartmentSerializer):
+    majors = MajorSerializer(many=True, read_only=True)
