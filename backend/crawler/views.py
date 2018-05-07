@@ -1,12 +1,36 @@
 import threading
 
+from django.apps import apps
 from rest_framework import generics
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAdminUser
 
 from .models import Crawler
-from .serializers import CrawlerSerializer, CrawlerDetailSerializer
+from .serializers import CrawlerSerializer, CrawlerDetailSerializer, CountTablesSerializer
 
 from .crawler import run
+
+
+@api_view(['GET'])
+@permission_classes((IsAdminUser,))
+def count_tables(request):
+    """
+    List # of instances for each table(model)
+    """
+    print(apps.get_models())
+    # serializer = CountTablesSerializer(many=True)
+    # print(serializer.data)
+
+# @api_view(['GET', 'POST'])
+# @permission_classes((IA))
+# def delete_tables(request):
+#     """
+#     List # of instances for each table(model)
+#     Or delete all instances for each table at once.
+#     """
+#     if request.method == 'GET':
+#         counts = {}
+
 
 
 class CrawlerList(generics.ListCreateAPIView):
