@@ -371,7 +371,7 @@ def parse(year, semester, lectures, field_name):
                 major_instance = None
 
         try:
-            course_instance = Course.objects.get(name=lecture['name'])
+            course_instance = Course.objects.get(code=lecture['code'])
 
         except ObjectDoesNotExist:
             course_instance = Course.objects.create(code=lecture['code'],
