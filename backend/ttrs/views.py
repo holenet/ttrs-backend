@@ -1,4 +1,6 @@
+from django.core.exceptions import FieldError
 from rest_framework import generics
+from rest_framework.exceptions import ParseError
 from rest_framework.permissions import IsAuthenticated
 
 from .permissions import IsTheStudent
@@ -9,16 +11,26 @@ from .models import Student, College, Department, Major, Course, Lecture
 
 class FilterAPIView(generics.GenericAPIView):
     """
-    Supporting custom APIView class for filtering queryset based on query_params.
+    Custom supporting APIView for filtering queryset based on query_params.
 
     By extend this class, the APIView will automatically filter queryset if the request
     has query_params.
     Keys of the query_params MUST be a valid key of the function 'QuerySet.filter', or
-    that param will be ignored.
+    raises ParseError with status 400.
     """
 
-    def get_queryset(self):
-        return self.queryset.filter(**self.request.query_params.dict())
+    def filter_queryset(self, queryset):
+        errors = {}
+        for key, value in self.request.query_params.items():
+            try:
+                queryset.filter(**{key: value})
+            except (FieldError, ValueError) as e:
+                error_key = '{}={}'.format(key, value)
+                error_value = list(e.args)
+                errors[error_key] = error_value
+        if errors:
+            raise ParseError(errors)
+        return queryset.filter(**self.request.query_params.dict())
 
 
 class StudentList(generics.ListCreateAPIView):
