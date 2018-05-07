@@ -152,7 +152,7 @@ def crawl_type(crawler, driver, type):
         total_cnt = int(driver.find_element_by_xpath('//*[@id="content"]/div/div[3]/div[1]/div[1]/h3/span').text)
         total_page = ((total_cnt-1)//10)+1
 
-        for i in range(1, 3):#total_page+1):
+        for i in range(1, total_page+1):
             # refresh crawler dynamically
             crawler.refresh_from_db()
             if crawler.cancel_flag:
@@ -192,7 +192,7 @@ def crawl_type(crawler, driver, type):
                 total_cnt = int(driver.find_element_by_xpath('//*[@id="content"]/div/div[3]/div[1]/div[1]/h3/span').text)
                 total_page = ((total_cnt - 1) // 10) + 1
 
-                for i in range(1, 3):#total_page+1):
+                for i in range(1, total_page+1):
                     # refresh crawler dynamically
                     crawler.refresh_from_db()
                     if crawler.cancel_flag:
