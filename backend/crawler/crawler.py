@@ -152,7 +152,7 @@ def crawl_type(crawler, driver, type):
         total_cnt = int(driver.find_element_by_xpath('//*[@id="content"]/div/div[3]/div[1]/div[1]/h3/span').text)
         total_page = ((total_cnt-1)//10)+1
 
-        for i in range(1, total_page+1):
+        for i in range(1, 3):#total_page+1):
             # refresh crawler dynamically
             crawler.refresh_from_db()
             if crawler.cancel_flag:
@@ -178,19 +178,21 @@ def crawl_type(crawler, driver, type):
 
     else:
         for field in fid:
-            driver.find_element_by_xpath('//*[@id="srchOpenUpSbjtFldCd"]/option[{}]'.format(fid[field]))
+            driver.find_element_by_xpath('//*[@id="srchOpenUpSbjtFldCd"]/option[{}]'.format(fid[field])).click()
             driver.implicitly_wait(1)
             for area in aid[field]:
-                driver.find_element_by_xpath('//*[@id="cond02"]/td[3]/select[2]/option[{}]'.format(aid[field][area]))
+                driver.find_element_by_xpath('//*[@id="cond02"]/td[3]/select[2]/option[{}]'.format(aid[field][area])).click()
                 driver.implicitly_wait(1)
 
                 driver.find_element_by_class_name('btn_search_ok').click()
                 driver.implicitly_wait(1)
 
+                #print(area, aid[field][area])
+
                 total_cnt = int(driver.find_element_by_xpath('//*[@id="content"]/div/div[3]/div[1]/div[1]/h3/span').text)
                 total_page = ((total_cnt - 1) // 10) + 1
 
-                for i in range(1, total_page+1):
+                for i in range(1, 3):#total_page+1):
                     # refresh crawler dynamically
                     crawler.refresh_from_db()
                     if crawler.cancel_flag:
@@ -418,3 +420,6 @@ def parse(year, semester, lectures, field_name):
 
         except Exception as e:
             print('parse', e)
+
+
+        print('course:', lecture['name'], 'type:', lecture['type'], 'field:', field_name)
