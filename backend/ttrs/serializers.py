@@ -21,11 +21,6 @@ class StudentSerializer(serializers.ModelSerializer):
             raise ValidationError("The host must be 'snu.ac.kr'.")
         return email
 
-    def validate_grade(self, grade):
-        if grade not in range(1, 5):
-            raise ValidationError("The grade must be a integer of 1~4")
-        return grade
-
     def get_field_value(self, data, key):
         if key in data:
             return data[key]
