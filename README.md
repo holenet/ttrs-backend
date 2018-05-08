@@ -22,7 +22,7 @@ $ pip3 install selenium==3.10
 ```
 
 ## APIs
-For the specification, please see [**WIKI**](https://github.com/SWPP/ttrs-backend/wiki#api)
+For the specification, please see [**WIKI**](https://github.com/SWPP/ttrs-backend/wiki/RESTful-API)
 
 ## ttrs-frontend
 https://github.com/SWPP/ttrs-frontend
