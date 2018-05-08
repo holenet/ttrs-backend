@@ -1,12 +1,16 @@
-from django.core.exceptions import FieldError
+from django.core.exceptions import FieldError, ObjectDoesNotExist
+from django.http import Http404
 from rest_framework import generics
 from rest_framework.exceptions import ParseError
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.response import Response
 
+from .permissions import IsStudentOrReadOnly, IsOtherStudent
 from .serializers import StudentSerializer, CollegeSerializer, DepartmentSerializer, MajorSerializer, \
-    CollegeDetailSerializer, DepartmentDetailSerializer, CourseSerializer, LectureSerializer
-from .models import Student, College, Department, Major, Course, Lecture
+    CollegeDetailSerializer, DepartmentDetailSerializer, CourseSerializer, LectureSerializer, EvaluationSerializer, \
+    EvaluationDetailSerializer
+from .models import Student, College, Department, Major, Course, Lecture, Evaluation
 
 
 class FilterAPIView(generics.GenericAPIView):
@@ -77,6 +81,39 @@ class LectureDetail(generics.RetrieveAPIView):
     queryset = Lecture.objects.all()
     serializer_class = LectureSerializer
     permission_classes = (IsAuthenticated,)
+
+
+class EvaluationList(FilterAPIView, generics.ListCreateAPIView):
+    queryset = Evaluation.objects.all()
+    serializer_class = EvaluationSerializer
+    permission_classes = (IsAuthenticated, IsStudentOrReadOnly)
+
+    def perform_create(self, serializer):
+        serializer.save(author=Student.objects.get_by_natural_key(self.request.user.username))
+
+
+class EvaluationDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Evaluation.objects.all()
+    serializer_class = EvaluationDetailSerializer
+    permission_classes = (IsAuthenticated, IsStudentOrReadOnly)
+
+
+class EvaluationLikeIt(generics.RetrieveAPIView):
+    queryset = Evaluation.objects.all()
+    serializer_class = EvaluationDetailSerializer
+    permission_classes = (IsAuthenticated, IsOtherStudent)
+
+    def retrieve(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        try:
+            instance = queryset.select_for_update().get(**kwargs)
+        except ObjectDoesNotExist:
+            raise Http404
+        self.check_object_permissions(self.request, instance)
+        instance.like_it += 1
+        instance.save()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
 
 class CollegeList(generics.ListAPIView):

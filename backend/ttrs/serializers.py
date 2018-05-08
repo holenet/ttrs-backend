@@ -5,7 +5,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from django.core.exceptions import ValidationError as DjangoValidationError
 
-from .models import Student, College, Department, Major, Course, Lecture
+from .models import Student, College, Department, Major, Course, Lecture, Evaluation
 
 
 class StudentSerializer(serializers.ModelSerializer):
@@ -36,10 +36,10 @@ class StudentSerializer(serializers.ModelSerializer):
         major = self.get_field_value(data, 'major')
         if department:
             if not college or college.id != department.college_id:
-                errors.append('The department must belong to the college')
+                errors.append('The department must belong to the college.')
         if major is not None:
             if not department or department.id != major.department_id:
-                errors.append('The major must belong to the department')
+                errors.append('The major must belong to the department.')
         if errors:
             raise ValidationError({'belonging': errors})
 
@@ -66,6 +66,25 @@ class LectureSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lecture
         fields = '__all__'
+
+
+class EvaluationSerializer(serializers.ModelSerializer):
+    rate = serializers.IntegerField()
+    like_it = serializers.ReadOnlyField()
+    author = serializers.ReadOnlyField(source='author.id')
+
+    class Meta:
+        model = Evaluation
+        fields = '__all__'
+
+    def validate_rate(self, rate):
+        if not (1 <= rate <= 10):
+            raise ValidationError("The rate should be an integer between 1 and 10 inclusive.")
+        return rate
+
+
+class EvaluationDetailSerializer(EvaluationSerializer):
+    lecture = serializers.ReadOnlyField(source='lecture.id')
 
 
 class CollegeSerializer(serializers.ModelSerializer):

@@ -53,7 +53,7 @@ class Evaluation(models.Model):
     lecture = models.ForeignKey('ttrs.Lecture', related_name='evaluations', on_delete=models.CASCADE)
     rate = models.PositiveSmallIntegerField()
     comment = models.TextField()
-    like_it = models.PositiveIntegerField()
+    like_it = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return '{}-{}'.format(self.lecture, self.author)
