@@ -17,6 +17,7 @@ class TableView(generics.ListCreateAPIView):
     or Delete all instances for each table at once.
     """
     serializer_class = TableSerializer
+    permission_classes = (IsAdminUser,)
     app_labels = ('ttrs', 'manager')
 
     def get_models(self):
