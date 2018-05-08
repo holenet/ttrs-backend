@@ -1,34 +1,52 @@
 import threading
 
 from django.apps import apps
-from rest_framework import generics, status
+from rest_framework import generics
 from rest_framework.permissions import IsAdminUser
+from rest_framework.response import Response
 
 from .models import Crawler
 from .serializers import CrawlerSerializer, CrawlerDetailSerializer, TableSerializer
 
 from .crawler import run
 
-@api_view(['GET'])
-@permission_classes((IsAdminUser,))
-def count_tables(request):
+
+class TableView(generics.ListCreateAPIView):
     """
     List # of instances for each table(model)
+    or Delete all instances for each table at once.
     """
-    print(apps.get_models())
-    # serializer = CountTablesSerializer(many=True)
-    # print(serializer.data)
+    serializer_class = TableSerializer
+    app_labels = ('ttrs', 'manager')
 
-# @api_view(['GET', 'POST'])
-# @permission_classes((IA))
-# def delete_tables(request):
-#     """
-#     List # of instances for each table(model)
-#     Or delete all instances for each table at once.
-#     """
-#     if request.method == 'GET':
-#         counts = {}
+    def get_models(self):
+        models = []
+        for app_label in self.app_labels:
+            for model in apps.get_app_config(app_label).get_models():
+                models.append(model)
+        return models
 
+    def get_queryset(self, models=None):
+        if models is None:
+            models = self.get_models()
+        tables = []
+        for model in models:
+            tables.append(dict(table_name=model.__name__, count=model.objects.count()))
+        return tables
+
+    def get_serializer(self, *args, **kwargs):
+        serializer_class = self.get_serializer_class()
+        kwargs['context'] = self.get_serializer_context()
+        kwargs['tables_choices'] = [(model.__name__, model.__name__) for model in self.get_models()]
+        return serializer_class(*args, **kwargs)
+
+    def create(self, request, *args, **kwargs):
+        names = request.data.getlist('tables', [])
+        models = self.get_models()
+        models = list(filter(lambda x: x.__name__ in names, models))
+        for model in models:
+            model.objects.all().delete()
+        return Response(self.get_queryset(models=models))
 
 
 class CrawlerList(generics.ListCreateAPIView):
