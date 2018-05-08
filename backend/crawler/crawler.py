@@ -391,4 +391,3 @@ def parse(year, semester, lectures, field_name):
 
 
         print('course:', lecture['name'], 'type:', lecture['type'], 'field:', field_name)
-        
