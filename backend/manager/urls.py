@@ -4,8 +4,9 @@ from rest_framework.urlpatterns import format_suffix_patterns
 from . import views
 
 urlpatterns = [
-    path('', views.CrawlerList.as_view()),
-    path('<int:pk>', views.CrawlerDetail.as_view()),
+    path('tables/', views.TableView.as_view()),
+    path('crawlers/', views.CrawlerList.as_view()),
+    path('crawlers/<int:pk>/', views.CrawlerDetail.as_view()),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)
