@@ -1,7 +1,8 @@
 from django.core.exceptions import FieldError
 from rest_framework import generics
 from rest_framework.exceptions import ParseError
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.generics import get_object_or_404
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from .permissions import IsTheStudent
 from .serializers import StudentSerializer, CollegeSerializer, DepartmentSerializer, MajorSerializer, \
@@ -33,10 +34,26 @@ class FilterAPIView(generics.GenericAPIView):
         return queryset.filter(**self.request.query_params.dict())
 
 
-class StudentList(generics.ListCreateAPIView):
+class StudentSignIn(generics.RetrieveAPIView):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
     permission_classes = (IsAuthenticated,)
+
+    def get_object(self):
+        username = self.request.user.username
+        return get_object_or_404(self.get_queryset(), username=username)
+
+
+class StudentList(generics.ListAPIView):
+    queryset = Student.objects.all()
+    serializer_class = StudentSerializer
+    permission_classes = (IsAuthenticated,)
+
+
+class StudentCreate(generics.CreateAPIView):
+    queryset = Student.objects.all()
+    serializer_class = StudentSerializer
+    permission_classes = (AllowAny,)
 
 
 class StudentDetail(generics.RetrieveUpdateDestroyAPIView):
