@@ -96,38 +96,9 @@ def run(crawler):
         driver.find_element_by_xpath('//*[@id="srchOpenSubmattCorsFg"]/option[2]').click()
         driver.implicitly_wait(1)
 
-        #driver.find_element_by_class_name('btn_search_ok').click()
-        #driver.implicitly_wait(1)
-
         for type in tid:
             crawl_type(crawler, driver, type)
 
-        #total_cnt = int(driver.find_element_by_xpath('//*[@id="content"]/div/div[3]/div[1]/div[1]/h3/span').text)
-        #total_page = ((total_cnt-1)//10)+1
-
-        #for i in range(1, total_page+1):
-        #    # refresh crawler dynamically
-        #    crawler.refresh_from_db()
-        #    if crawler.cancel_flag:
-        #        # administrator canceled this crawler
-        #        crawler.status = 'canceled {}/{}'.format(i, total_page)
-        #        crawler.save()
-        #        return
-        #
-        #    # goes to page i
-        #    driver.execute_script('fnGotoPage({})'.format(i))
-        #    # crawls a table of lectures in current page
-        #    print('=====================page {}====================='.format(i))
-        #    lectures = crawl(driver)
-        #    # parses given data and saves it in DB
-        #    parse(crawler.year, crawler.semester, lectures)
-        #
-        #    # change status of crawler and save
-        #    crawler.refresh_from_db()
-        #    crawler.status = 'running {}/{}'.format(i, total_page)
-        #    crawler.save()
-
-        # finish crawling
         crawler.status = 'finished {}'.format(total_page)
         crawler.save()
 
@@ -215,9 +186,6 @@ def crawl_type(crawler, driver, type):
                     crawler.save()
 
                 print('finished {} ({}-{})'.format(type, field, area))
-        pass
-
-
 
 
 def crawl(driver):
@@ -423,3 +391,4 @@ def parse(year, semester, lectures, field_name):
 
 
         print('course:', lecture['name'], 'type:', lecture['type'], 'field:', field_name)
+        
