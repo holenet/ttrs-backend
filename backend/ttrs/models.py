@@ -17,8 +17,8 @@ class Student(User):
 
 
 class Course(models.Model):
-    code = models.CharField(max_length=20)
-    name = models.CharField(max_length=50, unique=True)
+    code = models.CharField(max_length=20, unique=True)
+    name = models.CharField(max_length=50)
 
     type = models.CharField(max_length=10)
     field = models.CharField(max_length=30, null=True, blank=True)
