@@ -1,15 +1,13 @@
 import threading
 
 from django.apps import apps
-from rest_framework import generics
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework import generics, status
 from rest_framework.permissions import IsAdminUser
 
 from .models import Crawler
-from .serializers import CrawlerSerializer, CrawlerDetailSerializer, CountTablesSerializer
+from .serializers import CrawlerSerializer, CrawlerDetailSerializer, TableSerializer
 
 from .crawler import run
-
 
 @api_view(['GET'])
 @permission_classes((IsAdminUser,))
