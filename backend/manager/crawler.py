@@ -68,6 +68,11 @@ aid = {
 }
 
 
+total_cnt = 0;
+total_page = 0;
+total_page_fin = 0;
+
+
 def run(crawler):
     try:
         options = webdriver.ChromeOptions()
@@ -76,7 +81,7 @@ def run(crawler):
         options.add_argument('disable-gpu')
         options.add_argument('User-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KTHML, like Gecko) Chrome/61.0.3163.100 Safari/537.36')
 
-        driver = webdriver.Chrome(driver_path)#, chrome_options=options)
+        driver = webdriver.Chrome(driver_path, chrome_options=options)
         time.sleep(2)
 
         driver.get('https://sugang.snu.ac.kr/sugang/cc/cc100.action')
@@ -94,6 +99,14 @@ def run(crawler):
         # select bachelor's course
         driver.find_element_by_xpath('//*[@id="srchOpenSubmattCorsFg"]/option[2]').click()
         time.sleep(1)
+
+        driver.find_element_by_class_name('btn_search_ok').click()
+        
+        global total_cnt
+        global total_page
+
+        total_cnt = int(driver.find_element_by_xpath('//*[@id="content"]/div/div[3]/div[1]/div[1]/h3/span').text)
+        total_page = ((total_cnt-1)//10)+1
 
         for type in tid:
             crawl_type(crawler, driver, type)
@@ -115,19 +128,22 @@ def crawl_type(crawler, driver, type):
     driver.find_element_by_xpath('//*[@id="srchOpenSubmattFgCd"]/option[{}]'.format(tid[type])).click()
     driver.implicitly_wait(1)
 
+    global total_page
+    global total_page_fin
+
     if type != '교양':
         driver.find_element_by_class_name('btn_search_ok').click()
         driver.implicitly_wait(1)
 
-        total_cnt = int(driver.find_element_by_xpath('//*[@id="content"]/div/div[3]/div[1]/div[1]/h3/span').text)
-        total_page = ((total_cnt-1)//10)+1
+        section_cnt = int(driver.find_element_by_xpath('//*[@id="content"]/div/div[3]/div[1]/div[1]/h3/span').text)
+        section_page = ((section_cnt-1)//10)+1
 
-        for i in range(1, total_page+1):
+        for i in range(1, section_page+1):
             # refresh crawler dynamically
             crawler.refresh_from_db()
             if crawler.cancel_flag:
                 # administrator canceled this crawler
-                crawler.status = 'canceled {} {}/{}'.format(type, i, total_page)
+                crawler.status = 'canceled {} {}/{} total{}/{}'.format(type, i, section_page, total_page_fin, total_page)
                 crawler.save()
                 return
 
@@ -141,8 +157,10 @@ def crawl_type(crawler, driver, type):
 
             # change status of crawler and save
             crawler.refresh_from_db()
-            crawler.status = 'running {} {}/{}'.format(type, i, total_page)
+            crawler.status = 'running {} {}/{} total {}/{}'.format(type, i, section_page, total_page_fin, total_page)
             crawler.save()
+
+            total_page_fin += 1
 
         print('finished {}'.format(type))
 
@@ -159,15 +177,15 @@ def crawl_type(crawler, driver, type):
 
                 #print(area, aid[field][area])
 
-                total_cnt = int(driver.find_element_by_xpath('//*[@id="content"]/div/div[3]/div[1]/div[1]/h3/span').text)
-                total_page = ((total_cnt - 1) // 10) + 1
+                section_cnt = int(driver.find_element_by_xpath('//*[@id="content"]/div/div[3]/div[1]/div[1]/h3/span').text)
+                section_page = ((section_cnt - 1) // 10) + 1
 
-                for i in range(1, total_page+1):
+                for i in range(1, section_page+1):
                     # refresh crawler dynamically
                     crawler.refresh_from_db()
                     if crawler.cancel_flag:
                         # administrator canceled this crawler
-                        crawler.status = 'canceled {} ({}-{}) {}/{}'.format(type, field, area, i, total_page)
+                        crawler.status = 'canceled {} ({}-{}) {}/{} total {}/{}'.format(type, field, area, i, section_page, total_page_fin, total_page)
                         crawler.save()
                         return
 
@@ -181,8 +199,10 @@ def crawl_type(crawler, driver, type):
 
                     # change status of crawler and save
                     crawler.refresh_from_db()
-                    crawler.status = 'running {} ({}-{}) {}/{}'.format(type, field, area, i, total_page)
+                    crawler.status = 'running {} ({}-{}) {}/{} total {}/{}'.format(type, field, area, i, section_page, total_page_fin, total_page)
                     crawler.save()
+
+                    total_page_fin += 1
 
                 print('finished {} ({}-{})'.format(type, field, area))
 
