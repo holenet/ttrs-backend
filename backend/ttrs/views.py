@@ -82,34 +82,34 @@ class LectureDetail(generics.RetrieveAPIView):
 class CollegeList(generics.ListAPIView):
     queryset = College.objects.all()
     serializer_class = CollegeSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (AllowAny,)
 
 
 class CollegeDetail(generics.RetrieveAPIView):
     queryset = College.objects.all()
     serializer_class = CollegeDetailSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (AllowAny,)
 
 
 class DepartmentList(FilterAPIView, generics.ListAPIView):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (AllowAny,)
 
 
 class DepartmentDetail(generics.RetrieveAPIView):
     queryset = Department.objects.all()
     serializer_class = DepartmentDetailSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (AllowAny,)
 
 
 class MajorList(FilterAPIView, generics.ListAPIView):
     queryset = Major.objects.all()
     serializer_class = MajorSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (AllowAny,)
 
 
 class MajorDetail(generics.RetrieveAPIView):
     queryset = Major.objects.all()
     serializer_class = MajorSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (AllowAny,)
