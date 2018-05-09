@@ -103,13 +103,8 @@ class EvaluationLikeIt(generics.RetrieveAPIView):
     permission_classes = (IsAuthenticated, IsOtherStudent)
 
     def retrieve(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-        try:
-            instance = queryset.select_for_update().get(**kwargs)
-        except ObjectDoesNotExist:
-            raise Http404
-        self.check_object_permissions(self.request, instance)
-        instance.like_it += 1
+        instance = self.get_object()
+        instance.like_it.add(Student.objects.get_by_natural_key(request.user.username))
         instance.save()
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
