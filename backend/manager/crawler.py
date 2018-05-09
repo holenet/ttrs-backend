@@ -9,6 +9,7 @@ import os, time
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from selenium import webdriver
+from selenium.common.exceptions import NoSuchElementException
 
 from ttrs.models import *
 
@@ -71,6 +72,19 @@ aid = {
 total_cnt = 0;
 total_page = 0;
 total_page_fin = 0;
+detail =''
+
+def update(crawler, status, detail):
+    crawler.refresh_from_db()
+    if crawler.cancel_flag:
+        crawler.status = 'canceled: '+detail
+        crawler.save()
+        return False
+
+    else:
+        crawler.status = status+': '+detail
+        crawler.save()
+        return True
 
 
 def run(crawler):
@@ -104,12 +118,16 @@ def run(crawler):
         
         global total_cnt
         global total_page
+        global detail
 
         total_cnt = int(driver.find_element_by_xpath('//*[@id="content"]/div/div[3]/div[1]/div[1]/h3/span').text)
         total_page = ((total_cnt-1)//10)+1
 
         for type in tid:
-            crawl_type(crawler, driver, type)
+            if update(crawler, 'running', detail):
+                crawl_type(crawler, driver, type)
+            else:
+                return
 
         crawler.status = 'finished {}'.format(total_page)
         crawler.save()
@@ -118,6 +136,11 @@ def run(crawler):
 
     except ObjectDoesNotExist as e:
         print(e)
+
+    except NoSuchElementException as e:
+        print(e)
+        crawler.status = str('finished 0')
+        crawler.save()
 
     except Exception as e:
         crawler.status = str(e)
@@ -139,12 +162,10 @@ def crawl_type(crawler, driver, type):
         section_page = ((section_cnt-1)//10)+1
 
         for i in range(1, section_page+1):
-            # refresh crawler dynamically
-            crawler.refresh_from_db()
-            if crawler.cancel_flag:
-                # administrator canceled this crawler
-                crawler.status = 'canceled {} {}/{} total{}/{}'.format(type, i, section_page, total_page_fin, total_page)
-                crawler.save()
+            global detail
+            detail = '{} {}/{} total {}/{}'.format(type, i, section_page, total_page_fin, total_page)
+            if update(crawler, 'running', detail) is False:
+                print(type, crawler.status, crawler.cancel_flag)
                 return
 
             # goes to page i
@@ -154,11 +175,6 @@ def crawl_type(crawler, driver, type):
             lectures = crawl(driver)
             # parses given data and saves it in DB
             parse(crawler.year, crawler.semester, lectures, '')
-
-            # change status of crawler and save
-            crawler.refresh_from_db()
-            crawler.status = 'running {} {}/{} total {}/{}'.format(type, i, section_page, total_page_fin, total_page)
-            crawler.save()
 
             total_page_fin += 1
 
@@ -181,12 +197,8 @@ def crawl_type(crawler, driver, type):
                 section_page = ((section_cnt - 1) // 10) + 1
 
                 for i in range(1, section_page+1):
-                    # refresh crawler dynamically
-                    crawler.refresh_from_db()
-                    if crawler.cancel_flag:
-                        # administrator canceled this crawler
-                        crawler.status = 'canceled {} ({}-{}) {}/{} total {}/{}'.format(type, field, area, i, section_page, total_page_fin, total_page)
-                        crawler.save()
+                    detail = '{} ({}-{}) {}/{} total {}/{}'.format(type, field, area, i, section_page, total_page_fin, total_page)
+                    if update(crawler, 'running', detail) is False:
                         return
 
                     # goes to page i
@@ -196,11 +208,6 @@ def crawl_type(crawler, driver, type):
                     lectures = crawl(driver)
                     # parses given data and saves it in DB
                     parse(crawler.year, crawler.semester, lectures, field + '-' + area)
-
-                    # change status of crawler and save
-                    crawler.refresh_from_db()
-                    crawler.status = 'running {} ({}-{}) {}/{} total {}/{}'.format(type, field, area, i, section_page, total_page_fin, total_page)
-                    crawler.save()
 
                     total_page_fin += 1
 
