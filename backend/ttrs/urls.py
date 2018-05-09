@@ -13,6 +13,10 @@ urlpatterns = [
     path('lectures/', views.LectureList.as_view()),
     path('lectures/<int:pk>/', views.LectureDetail.as_view()),
 
+    path('evaluations/', views.EvaluationList.as_view()),
+    path('evaluations/<int:pk>/', views.EvaluationDetail.as_view()),
+    path('evaluations/<int:pk>/likeit/', views.EvaluationLikeIt.as_view()),
+
     path('colleges/', views.CollegeList.as_view()),
     path('colleges/<int:pk>/', views.CollegeDetail.as_view()),
     path('departments/', views.DepartmentList.as_view()),

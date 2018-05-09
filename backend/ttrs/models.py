@@ -49,11 +49,11 @@ class Lecture(models.Model):
 
 
 class Evaluation(models.Model):
-    author = models.ForeignKey('ttrs.Student', related_name='evauations', on_delete=models.DO_NOTHING)
+    author = models.ForeignKey('ttrs.Student', related_name='evaluations', on_delete=models.DO_NOTHING)
     lecture = models.ForeignKey('ttrs.Lecture', related_name='evaluations', on_delete=models.CASCADE)
     rate = models.PositiveSmallIntegerField()
     comment = models.TextField()
-    like_it = models.PositiveIntegerField()
+    like_it = models.ManyToManyField('ttrs.Student', related_name='like_its', default=[], blank=True)
 
     def __str__(self):
         return '{}-{}'.format(self.lecture, self.author)
