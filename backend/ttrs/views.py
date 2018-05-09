@@ -1,5 +1,4 @@
-from django.core.exceptions import FieldError, ObjectDoesNotExist
-from django.http import Http404
+from django.core.exceptions import FieldError
 from rest_framework import generics
 from rest_framework.exceptions import ParseError
 from rest_framework.generics import get_object_or_404
@@ -97,7 +96,7 @@ class EvaluationDetail(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (IsAuthenticated, IsStudentOrReadOnly)
 
 
-class EvaluationLikeIt(generics.RetrieveAPIView):
+class EvaluationLikeIt(generics.RetrieveDestroyAPIView):
     queryset = Evaluation.objects.all()
     serializer_class = EvaluationDetailSerializer
     permission_classes = (IsAuthenticated, IsOtherStudent)
@@ -105,6 +104,13 @@ class EvaluationLikeIt(generics.RetrieveAPIView):
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         instance.like_it.add(Student.objects.get_by_natural_key(request.user.username))
+        instance.save()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.like_it.remove(Student.objects.get_by_natural_key(request.user.username))
         instance.save()
         serializer = self.get_serializer(instance)
         return Response(serializer.data)

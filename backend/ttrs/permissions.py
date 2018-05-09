@@ -18,12 +18,10 @@ class IsStudentOrReadOnly(permissions.BasePermission):
 class IsOtherStudent(permissions.BasePermission):
     def has_permission(self, request, view):
         try:
-            print(Student.objects.get_by_natural_key(request.user.username))
+            Student.objects.get_by_natural_key(request.user.username)
         except ObjectDoesNotExist:
             return False
         return True
 
     def has_object_permission(self, request, view, evaluation):
-        print(request.user.username)
-        print(evaluation.author.username)
         return request.user.username != evaluation.author.username
