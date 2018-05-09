@@ -97,18 +97,6 @@ class LectureSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class CollegeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = College
-        fields = '__all__'
-
-
-class DepartmentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Department
-        fields = '__all__'
-
-
 class MajorSerializer(serializers.ModelSerializer):
     college = serializers.SerializerMethodField()
 
@@ -120,9 +108,17 @@ class MajorSerializer(serializers.ModelSerializer):
         return major.department.college_id
 
 
-class CollegeDetailSerializer(CollegeSerializer):
+class DepartmentSerializer(serializers.ModelSerializer):
+    majors = MajorSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Department
+        fields = '__all__'
+
+
+class CollegeSerializer(serializers.ModelSerializer):
     departments = DepartmentSerializer(many=True, read_only=True)
 
-
-class DepartmentDetailSerializer(DepartmentSerializer):
-    majors = MajorSerializer(many=True, read_only=True)
+    class Meta:
+        model = College
+        fields = '__all__'

@@ -5,7 +5,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from .serializers import StudentSerializer, CollegeSerializer, DepartmentSerializer, MajorSerializer, \
-    CollegeDetailSerializer, DepartmentDetailSerializer, CourseSerializer, LectureSerializer
+    CourseSerializer, LectureSerializer
 from .models import Student, College, Department, Major, Course, Lecture
 
 
@@ -87,7 +87,7 @@ class CollegeList(generics.ListAPIView):
 
 class CollegeDetail(generics.RetrieveAPIView):
     queryset = College.objects.all()
-    serializer_class = CollegeDetailSerializer
+    serializer_class = CollegeSerializer
     permission_classes = (AllowAny,)
 
 
@@ -99,7 +99,7 @@ class DepartmentList(FilterAPIView, generics.ListAPIView):
 
 class DepartmentDetail(generics.RetrieveAPIView):
     queryset = Department.objects.all()
-    serializer_class = DepartmentDetailSerializer
+    serializer_class = DepartmentSerializer
     permission_classes = (AllowAny,)
 
 
