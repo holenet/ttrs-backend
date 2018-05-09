@@ -76,7 +76,7 @@ def run(crawler):
         options.add_argument('disable-gpu')
         options.add_argument('User-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KTHML, like Gecko) Chrome/61.0.3163.100 Safari/537.36')
 
-        driver = webdriver.Chrome(driver_path), chrome_options=options)
+        driver = webdriver.Chrome(driver_path, chrome_options=options)
         driver.implicitly_wait(3)
 
         driver.get('https://sugang.snu.ac.kr/sugang/cc/cc100.action')
