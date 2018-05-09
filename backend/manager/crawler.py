@@ -71,23 +71,23 @@ aid = {
 def run(crawler):
     try:
         options = webdriver.ChromeOptions()
-        options.add_argument('headless')
-        options.add_argument('window-size=1920x1080')
-        options.add_argument('disable-gpu')
-        options.add_argument('User-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KTHML, like Gecko) Chrome/61.0.3163.100 Safari/537.36')
+        #options.add_argument('headless')
+        #options.add_argument('window-size=1920x1080')
+        #options.add_argument('disable-gpu')
+        #options.add_argument('User-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KTHML, like Gecko) Chrome/61.0.3163.100 Safari/537.36')
 
-        driver = webdriver.Chrome(driver_path, chrome_options=options)
+        driver = webdriver.Chrome(driver_path)#, chrome_options=options)
         driver.implicitly_wait(3)
 
         driver.get('https://sugang.snu.ac.kr/sugang/cc/cc100.action')
         driver.implicitly_wait(1)
         # detailed search
         driver.find_element_by_id('detail_button').click()
-        driver.implicitly_wait(1)
+        driver.implicitly_wait(10)
         # select year
-        driver.find_element_by_xpath('//*[@id="srchOpenSchyy"]').clear()
-        driver.implicitly_wait(1)
-        driver.find_element_by_xpath('//*[@id="srchOpenSchyy"]').send_keys(crawler.year)
+        #driver.find_element_by_xpath('//*[@id="srchOpenSchyy"]').clear()
+        #driver.implicitly_wait(1)
+        #driver.find_element_by_xpath('//*[@id="srchOpenSchyy"]').send_keys('')
         driver.implicitly_wait(1)
         # select semester
         driver.find_element_by_xpath('//*[@id="srchOpenShtm"]/option[{}]'.format(sid[crawler.semester])).click()
