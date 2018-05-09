@@ -61,7 +61,7 @@ class Evaluation(models.Model):
 
 class TimeTable(models.Model):
     owner = models.ForeignKey('ttrs.Student', related_name='time_tables', on_delete=models.CASCADE)
-    sender = models.ForeignKey('ttrs.Student', related_name='sent_time_tables', on_delete=models.CASCADE, blank=True, null=True)
+    sender = models.ForeignKey('ttrs.Student', related_name='sent_time_tables', on_delete=models.SET_NULL, blank=True, null=True)
 
     type = models.CharField(max_length=10)
 

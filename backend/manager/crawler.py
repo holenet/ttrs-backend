@@ -85,9 +85,9 @@ def run(crawler):
         driver.find_element_by_id('detail_button').click()
         driver.implicitly_wait(1)
         # select year
-        driver.find_element_by_xpath('//*[@id="srchOpenSchyy"]').clear()
-        driver.implicitly_wait(1)
-        driver.find_element_by_xpath('//*[@id="srchOpenSchyy"]').send_keys(crawler.year)
+        #driver.find_element_by_xpath('//*[@id="srchOpenSchyy"]').clear()
+        #driver.implicitly_wait(1)
+        #driver.find_element_by_xpath('//*[@id="srchOpenSchyy"]').send_keys('')
         driver.implicitly_wait(1)
         # select semester
         driver.find_element_by_xpath('//*[@id="srchOpenShtm"]/option[{}]'.format(sid[crawler.semester])).click()
