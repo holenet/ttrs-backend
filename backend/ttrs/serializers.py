@@ -5,13 +5,42 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from django.core.exceptions import ValidationError as DjangoValidationError
 
-from .models import Student, College, Department, Major, Course, Lecture
+from .models import Student, College, Department, Major, Course, Lecture, TimeTable
 
 
 class StudentSerializer(serializers.ModelSerializer):
+    my_time_table = serializers.SerializerMethodField()
+    bookmarked_time_tables = serializers.SerializerMethodField()
+    received_time_tables = serializers.SerializerMethodField()
+
+    def get_my_time_table(self, student):
+        my_table = []
+        tts = TimeTable.objects.all().filter(owner=student, type='selected')
+        for tt in tts:
+            my_table.append(tt.id)
+
+        return my_table
+
+    def get_bookmarked_time_tables(self, student):
+        bookmarked = []
+        tts = TimeTable.objects.all().filter(owner=student, type='bookmarked')
+        for tt in tts:
+            bookmarked.append(tt.id)
+
+        return bookmarked
+
+    def get_received_time_tables(self, student):
+        received = []
+        tts = TimeTable.objects.all().filter(owner=student, type='received')
+        for tt in tts:
+            received.append(tt.id)
+
+        return received
+
     class Meta:
         model = Student
-        fields = ('id', 'username', 'password', 'email', 'grade', 'college', 'department', 'major', 'not_recommends')
+        fields = ('id', 'username', 'password', 'email', 'grade', 'college', 'department', 'major', 'not_recommends',
+                  'my_time_table', 'bookmarked_time_tables', 'received_time_tables')
         extra_kwargs = {
             'email': {'required': True, 'allow_null': False, 'allow_blank': False}
         }
