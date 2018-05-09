@@ -21,21 +21,10 @@ sid = {'1학기': 1,
        '겨울학기': 4
 }
 
-
-tid = {'교양': 2,
-       '전필': 3,
-       '전선': 4,
-       '일선': 5,
-       '교직': 6,
-       '논문': 7,
-       '대학원': 8,
-       '학사': 9,
-}
-
-total_cnt = 0
-total_page = 0
-total_page_fin = 0
-detail = ''
+total_cnt = 0           # total number of lectures
+total_page = 0          # total number of pages
+total_page_fin = 0      # number of finished pages
+detail = ''             # detail for crawler status
 
 
 def update(crawler, status, detail):
@@ -59,7 +48,7 @@ def run(crawler):
         options.add_argument('disable-gpu')
         options.add_argument('User-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KTHML, like Gecko) Chrome/61.0.3163.100 Safari/537.36')
 
-        driver = webdriver.Chrome(driver_path)#, chrome_options=options)
+        driver = webdriver.Chrome(driver_path, chrome_options=options)
         time.sleep(2)
 
         driver.get('https://sugang.snu.ac.kr/sugang/cc/cc100.action')
@@ -68,7 +57,6 @@ def run(crawler):
         driver.find_element_by_id('detail_button').click()
         time.sleep(2)
         # select year
-        year_elt = driver.find_element_by_id('srchOpenSchyy')
         driver.execute_script("document.getElementById('srchOpenSchyy').value = '{}'".format(crawler.year))
         time.sleep(1)
         # select semester
@@ -78,6 +66,7 @@ def run(crawler):
         driver.find_element_by_xpath('//*[@id="srchOpenSubmattCorsFg"]/option[2]').click()
         time.sleep(1)
 
+        # clicks search button
         driver.find_element_by_class_name('btn_search_ok').click()
         
         global total_cnt
@@ -151,21 +140,20 @@ def crawl_type(crawler, driver, type):
 
         print('finished {}'.format(type))
 
-    else:
+    else: # type == '교양'
         field_select = driver.find_element_by_xpath('//*[@id="srchOpenUpSbjtFldCd"]')
-        field_cnt = len(field_select.find_elements_by_tag_name('option'))
         fields = [x.text.strip() for x in field_select.find_elements_by_tag_name('option')]
+        field_cnt = len(fields)
+
         for i in range(2, field_cnt+1):
-            # field = field_select.find_elements_by_tag_name('option')[i].text
             field = fields[i-1]
             driver.find_element_by_xpath('//*[@id="srchOpenUpSbjtFldCd"]/option[{}]'.format(i)).click()
 
             area_select = driver.find_element_by_xpath('//*[@id="cond02"]/td[3]/select[2]')
-            area_cnt = len(area_select.find_elements_by_tag_name('option'))
-
             areas = [x.text.strip() for x in area_select.find_elements_by_tag_name('option')]
+            area_cnt = len(areas)
+
             for j in range(2, area_cnt+1):
-                # area = area_select.find_elements_by_tag_name('option')[j].text
                 area = areas[j-1]
                 driver.find_element_by_xpath('//*[@id="cond02"]/td[3]/select[2]/option[{}]'.format(j)).click()
                 time.sleep(1)
@@ -188,7 +176,7 @@ def crawl_type(crawler, driver, type):
                     lectures = crawl(driver)
                     # parses given data and saves it in DB
                     parse(crawler.year, crawler.semester, lectures, field + '-' + area)
-
+                    # increments number of pages finished
                     total_page_fin += 1
 
                 print('finished {} ({}-{})'.format(type, field, area))
@@ -247,12 +235,9 @@ def crawl(driver):
 
                 classroom = columns[12].text.split('-')
                 if len(classroom) == 3:
-                    #print(classroom)
-
                     if len(classroom[1]) == 1:
                         building = classroom[0] + '-' + classroom[1]
                         room_no = classroom[2]
-
                     else:
                         building = classroom[0]
                         room_no = classroom[1] + '-' + classroom[2]
@@ -281,12 +266,9 @@ def crawl(driver):
 
                 classroom = columns[2].text.split('-')
                 if len(classroom) == 3:
-                    #print(classroom)
-
                     if len(classroom[1]) == 1:
                         building = classroom[0] + '-' + classroom[1]
                         room_no = classroom[2]
-
                     else:
                         building = classroom[0]
                         room_no = classroom[1] + '-' + classroom[2]
