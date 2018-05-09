@@ -83,7 +83,7 @@ def run(crawler):
         driver.implicitly_wait(1)
         # detailed search
         driver.find_element_by_id('detail_button').click()
-        driver.implicitly_wait(10)
+        driver.implicitly_wait(1)
         # select year
         #driver.find_element_by_xpath('//*[@id="srchOpenSchyy"]').clear()
         #driver.implicitly_wait(1)
