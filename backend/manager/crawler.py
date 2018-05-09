@@ -84,7 +84,7 @@ def run(crawler):
         for t in range(2, type_cnt+1):
             if update(crawler, 'running', detail):
                 print('start running ', types[t-1])
-                crawl_type(crawler, driver, types[t-1])
+                crawl_type(crawler, driver, t, types[t-1])
             else:
                 return
 
@@ -107,8 +107,13 @@ def run(crawler):
         crawler.save()
 
 
-def crawl_type(crawler, driver, type):
-    driver.find_element_by_xpath('//*[@id="srchOpenSubmattFgCd"]/option[{}]'.format(tid[type])).click()
+def crawl_type(crawler, driver, tid, type):
+    # clears field and area
+    driver.find_element_by_xpath('//*[@id="srchOpenUpSbjtFldCd"]/option[1]').click()
+    driver.find_element_by_xpath('//*[@id="cond02"]/td[3]/select[2]/option[1]').click()
+
+    # selects type
+    driver.find_element_by_xpath('//*[@id="srchOpenSubmattFgCd"]/option[{}]'.format(tid)).click()
     driver.implicitly_wait(1)
 
     global total_page
@@ -290,8 +295,12 @@ def crawl(driver):
                 }
 
                 lecture['time_slots'].append(time_slot)
+
         except Exception as e:
             errors.append(str(e))
+
+    if lecture is not None:
+        lectures.append(lecture)
 
     return lectures
 
