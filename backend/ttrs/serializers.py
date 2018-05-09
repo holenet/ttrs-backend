@@ -100,14 +100,11 @@ class LectureSerializer(serializers.ModelSerializer):
 class EvaluationSerializer(serializers.ModelSerializer):
     author = serializers.ReadOnlyField(source='author.id')
     rate = serializers.IntegerField()
-    # like_it = serializers.SerializerMethodField(read_only=True)
+    like_it = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
 
     class Meta:
         model = Evaluation
         fields = '__all__'
-
-    # def get_like_it(self, evaluation):
-    #     return evaluation.like_it.count()
 
     def validate_rate(self, rate):
         if not (1 <= rate <= 10):
