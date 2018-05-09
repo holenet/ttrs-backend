@@ -5,13 +5,21 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from django.core.exceptions import ValidationError as DjangoValidationError
 
-from .models import Student, College, Department, Major, Course, Lecture, TimeTable
+from .models import Student, College, Department, Major, Course, Lecture, Evaluation, TimeTable
 
 
 class StudentSerializer(serializers.ModelSerializer):
     my_time_table = serializers.SerializerMethodField()
     bookmarked_time_tables = serializers.SerializerMethodField()
     received_time_tables = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Student
+        fields = ('id', 'username', 'password', 'email', 'grade', 'college', 'department', 'major', 'not_recommends',
+                  'my_time_table', 'bookmarked_time_tables', 'received_time_tables')
+        extra_kwargs = {
+            'email': {'required': True, 'allow_null': False, 'allow_blank': False}
+        }
 
     def get_my_time_table(self, student):
         my_table = []
@@ -37,25 +45,17 @@ class StudentSerializer(serializers.ModelSerializer):
 
         return received
 
-    class Meta:
-        model = Student
-        fields = ('id', 'username', 'password', 'email', 'grade', 'college', 'department', 'major', 'not_recommends',
-                  'my_time_table', 'bookmarked_time_tables', 'received_time_tables')
-        extra_kwargs = {
-            'email': {'required': True, 'allow_null': False, 'allow_blank': False}
-        }
-
-    def validate_email(self, email):
-        if email.split('@')[1] != 'snu.ac.kr':
-            raise ValidationError("The host must be 'snu.ac.kr'.")
-        return email
-
     def get_field_value(self, data, key):
         if key in data:
             return data[key]
         if self.instance:
             return getattr(self.instance, key)
         return None
+
+    def validate_email(self, email):
+        if email.split('@')[1] != 'snu.ac.kr':
+            raise ValidationError("The host must be 'snu.ac.kr'.")
+        return email
 
     def validate(self, data):
         # belonging validations of college-department, department-major
@@ -65,10 +65,10 @@ class StudentSerializer(serializers.ModelSerializer):
         major = self.get_field_value(data, 'major')
         if department:
             if not college or college.id != department.college_id:
-                errors.append('The department must belong to the college')
+                errors.append('The department must belong to the college.')
         if major is not None:
             if not department or department.id != major.department_id:
-                errors.append('The major must belong to the department')
+                errors.append('The major must belong to the department.')
         if errors:
             raise ValidationError({'belonging': errors})
 
@@ -95,6 +95,28 @@ class LectureSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lecture
         fields = '__all__'
+
+
+class EvaluationSerializer(serializers.ModelSerializer):
+    author = serializers.ReadOnlyField(source='author.id')
+    rate = serializers.IntegerField()
+    # like_it = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = Evaluation
+        fields = '__all__'
+
+    # def get_like_it(self, evaluation):
+    #     return evaluation.like_it.count()
+
+    def validate_rate(self, rate):
+        if not (1 <= rate <= 10):
+            raise ValidationError("The rate should be an integer between 1 and 10 inclusive.")
+        return rate
+
+
+class EvaluationDetailSerializer(EvaluationSerializer):
+    lecture = serializers.ReadOnlyField(source='lecture.id')
 
 
 class MajorSerializer(serializers.ModelSerializer):
