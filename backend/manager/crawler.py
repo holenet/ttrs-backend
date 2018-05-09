@@ -71,10 +71,10 @@ aid = {
 def run(crawler):
     try:
         options = webdriver.ChromeOptions()
-        #options.add_argument('headless')
-        #options.add_argument('window-size=1920x1080')
-        #options.add_argument('disable-gpu')
-        #options.add_argument('User-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KTHML, like Gecko) Chrome/61.0.3163.100 Safari/537.36')
+        options.add_argument('headless')
+        options.add_argument('window-size=1920x1080')
+        options.add_argument('disable-gpu')
+        options.add_argument('User-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KTHML, like Gecko) Chrome/61.0.3163.100 Safari/537.36')
 
         driver = webdriver.Chrome(driver_path)#, chrome_options=options)
         driver.implicitly_wait(3)
