@@ -8,8 +8,7 @@ from rest_framework.response import Response
 
 from .permissions import IsStudentOrReadOnly, IsOtherStudent
 from .serializers import StudentSerializer, CollegeSerializer, DepartmentSerializer, MajorSerializer, \
-    CollegeDetailSerializer, DepartmentDetailSerializer, CourseSerializer, LectureSerializer, EvaluationSerializer, \
-    EvaluationDetailSerializer
+    CourseSerializer, LectureSerializer, EvaluationSerializer, EvaluationDetailSerializer
 from .models import Student, College, Department, Major, Course, Lecture, Evaluation
 
 
@@ -119,34 +118,34 @@ class EvaluationLikeIt(generics.RetrieveAPIView):
 class CollegeList(generics.ListAPIView):
     queryset = College.objects.all()
     serializer_class = CollegeSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (AllowAny,)
 
 
 class CollegeDetail(generics.RetrieveAPIView):
     queryset = College.objects.all()
-    serializer_class = CollegeDetailSerializer
-    permission_classes = (IsAuthenticated,)
+    serializer_class = CollegeSerializer
+    permission_classes = (AllowAny,)
 
 
 class DepartmentList(FilterAPIView, generics.ListAPIView):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (AllowAny,)
 
 
 class DepartmentDetail(generics.RetrieveAPIView):
     queryset = Department.objects.all()
-    serializer_class = DepartmentDetailSerializer
-    permission_classes = (IsAuthenticated,)
+    serializer_class = DepartmentSerializer
+    permission_classes = (AllowAny,)
 
 
 class MajorList(FilterAPIView, generics.ListAPIView):
     queryset = Major.objects.all()
     serializer_class = MajorSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (AllowAny,)
 
 
 class MajorDetail(generics.RetrieveAPIView):
     queryset = Major.objects.all()
     serializer_class = MajorSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (AllowAny,)
