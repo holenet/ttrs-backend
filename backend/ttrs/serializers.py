@@ -143,11 +143,6 @@ class CollegeSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class OptionSerializer(serializers.Serializer):
-    student_id = serializers.IntegerField()
-    expected_credit = serializers.IntegerField()
-
-
 class RecommendSerializer(serializers.Serializer):
     lectures = serializers.ListField(child=serializers.IntegerField())
     score = serializers.IntegerField()
