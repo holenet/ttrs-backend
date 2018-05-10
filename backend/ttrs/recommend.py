@@ -12,7 +12,7 @@ def recommend(_options):
         num_recommends = 3
         for i in range(num_recommends):
             lectures = build_timetable(options)
-            score = get_score(lectures)
+            score = get_score(lectures, options)
 
             recommends['tt {}'.format(i)] = {"lectures": lectures, "score": score}
 
@@ -38,5 +38,5 @@ def build_timetable(options):
     return lectures
 
 
-def get_score(lectures):
+def get_score(lectures, options):
     return random.randrange(1,100)
