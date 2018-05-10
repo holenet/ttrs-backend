@@ -21,8 +21,6 @@ def recommend(_options):
 
 
 def build_timetable(options):
-    lectures = []
-
     if 'student_id' in options:
         student_id = int(options.get('student_id'))
         # grab some info about student from db
@@ -30,6 +28,7 @@ def build_timetable(options):
     expected_credit = int(options.get('expected_credit')) if 'expected_credit' in options else 18
         
     # some recursive method to construct tt?
+    lectures = []
     for j in range(expected_credit):
         lecture_id = random.randrange(1,100)
         lectures.append(lecture_id)
