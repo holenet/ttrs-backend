@@ -76,10 +76,10 @@ def run(crawler):
         global detail
 
         total_cnt = int(driver.find_element_by_xpath('//*[@id="content"]/div/div[3]/div[1]/div[1]/h3/span').text)
-        total fin = 0
+        total_fin = 0
         total_page = ((total_cnt-1)//10)+1
         total_page_fin = 0
-        detail = 0
+        detail = ''
 
         type_select = driver.find_element_by_xpath('//*[@id="srchOpenSubmattFgCd"]')
         types = [x.text.strip() for x in type_select.find_elements_by_tag_name('option')]
@@ -107,7 +107,7 @@ def run(crawler):
         crawler.save()
 
     except Exception as e:
-        print(e)
+        print('here!', e)
         crawler.status = str(e)
         crawler.save()
 
@@ -134,6 +134,7 @@ def crawl_type(crawler, driver, tid, type):
         section_cnt = int(driver.find_element_by_xpath('//*[@id="content"]/div/div[3]/div[1]/div[1]/h3/span').text)
         section_page = ((section_cnt-1)//10)+1
 
+        print('starting {}...'.format(type))
         for i in range(1, section_page+1):
             detail = '{} page {}/{} total {}/{} lectures'.format(type, i, section_page, total_fin, total_cnt)
             if update(crawler, 'running', detail) is False:

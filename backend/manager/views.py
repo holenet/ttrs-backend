@@ -1,6 +1,7 @@
 import threading
 
 from django.apps import apps
+from django.core.exceptions import ValidationError
 from rest_framework import generics
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
@@ -58,6 +59,12 @@ class CrawlerList(generics.ListCreateAPIView):
     permission_classes = (IsAdminUser, )
 
     def perform_create(self, serializer):
+        crawlers = Crawler.objects.all()
+        for c in crawlers:
+            status = c.status.split()[0]
+            if status == 'creating' or status == 'running:':
+                raise ValidationError('There already exists active crawler')
+
         crawler = serializer.save(status='creating')
         thread = threading.Thread(target=run, args=(crawler,))
         thread.start()
