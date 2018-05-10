@@ -7,6 +7,7 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 
 from .models import Student, College, Department, Major, Course, Lecture, Evaluation, TimeTable
 
+from .recommend import recommend
 
 class StudentSerializer(serializers.ModelSerializer):
     my_time_table = serializers.SerializerMethodField()
@@ -141,3 +142,14 @@ class CollegeSerializer(serializers.ModelSerializer):
     class Meta:
         model = College
         fields = '__all__'
+
+
+class RecommendSerializer(serializers.Serializer):
+    options = serializers.CharField(write_only=True)
+    recommends = serializers.CharField(read_only=True)
+
+    def create(self, data):
+        instance = {}
+        instance['recommends'] = recommend(data.get('options'))
+        return instance
+

@@ -7,7 +7,7 @@ from rest_framework.response import Response
 
 from .permissions import IsStudentOrReadOnly, IsOtherStudent
 from .serializers import StudentSerializer, CollegeSerializer, DepartmentSerializer, MajorSerializer, \
-    CourseSerializer, LectureSerializer, EvaluationSerializer, EvaluationDetailSerializer
+    CourseSerializer, LectureSerializer, EvaluationSerializer, EvaluationDetailSerializer, RecommendSerializer
 from .models import Student, College, Department, Major, Course, Lecture, Evaluation
 
 
@@ -150,3 +150,19 @@ class MajorDetail(generics.RetrieveAPIView):
     queryset = Major.objects.all()
     serializer_class = MajorSerializer
     permission_classes = (AllowAny,)
+
+
+class RecommendView(generics.ListCreateAPIView):
+    serializer_class = RecommendSerializer
+    permission_classes = (AllowAny,)
+
+    def get_queryset(self):
+        return []
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(serializer.data)
+
+
