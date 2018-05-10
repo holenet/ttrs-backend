@@ -98,9 +98,6 @@ def run(crawler):
 
         driver.close()
 
-    except ObjectDoesNotExist as e:
-        print(e)
-
     except NoSuchElementException as e:
         print(e)
         crawler.status = str('finished {} lectures due to error'.format(total_fin))
