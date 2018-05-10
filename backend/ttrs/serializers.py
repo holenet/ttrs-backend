@@ -141,3 +141,9 @@ class CollegeSerializer(serializers.ModelSerializer):
     class Meta:
         model = College
         fields = '__all__'
+
+
+class RecommendSerializer(serializers.Serializer):
+    lectures = serializers.ListField(child=serializers.IntegerField())
+    score = serializers.IntegerField()
+

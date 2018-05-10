@@ -1,3 +1,5 @@
+import json
+
 from django.core.exceptions import FieldError
 from rest_framework import generics
 from rest_framework.exceptions import ParseError
@@ -7,15 +9,16 @@ from rest_framework.response import Response
 
 from .permissions import IsStudentOrReadOnly, IsOtherStudent
 from .serializers import StudentSerializer, CollegeSerializer, DepartmentSerializer, MajorSerializer, \
-    CourseSerializer, LectureSerializer, EvaluationSerializer, EvaluationDetailSerializer
+    CourseSerializer, LectureSerializer, EvaluationSerializer, EvaluationDetailSerializer, RecommendSerializer
 from .models import Student, College, Department, Major, Course, Lecture, Evaluation
 
+from .recommend import recommend
 
 class FilterAPIView(generics.GenericAPIView):
     """
     Custom supporting APIView for filtering queryset based on query_params.
 
-    By extend this class, the APIView will automatically filter queryset if the request
+    By extending this class, the APIView will automatically filter queryset if the request
     has query_params.
     Keys of the query_params MUST be a valid key of the function 'QuerySet.filter', or
     raises ParseError with status 400.
@@ -150,3 +153,13 @@ class MajorDetail(generics.RetrieveAPIView):
     queryset = Major.objects.all()
     serializer_class = MajorSerializer
     permission_classes = (AllowAny,)
+
+
+class RecommendView(generics.ListAPIView):
+    serializer_class = RecommendSerializer
+    permission_classes = (AllowAny,)
+
+    def get_queryset(self):
+        options = self.request.query_params
+        return recommend(options)
+
