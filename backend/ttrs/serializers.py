@@ -7,7 +7,6 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 
 from .models import Student, College, Department, Major, Course, Lecture, Evaluation, TimeTable
 
-from .recommend import recommend
 
 class StudentSerializer(serializers.ModelSerializer):
     my_time_table = serializers.SerializerMethodField()

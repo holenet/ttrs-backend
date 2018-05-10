@@ -1,6 +1,8 @@
 import json
 import random
 
+from .models import Student
+
 
 def recommend(_options):
     try:
@@ -25,9 +27,18 @@ def recommend(_options):
 def build_timetable(options):
     if 'student_id' in options:
         student_id = int(options.get('student_id'))
-        # grab some info about student from db
+        student = Student.objects.get(id=student_id)
 
-    expected_credit = int(options.get('expected_credit')) if 'expected_credit' in options else 18
+        # grab some info..
+        college = student.college
+        department = student.department
+        major = student.major
+        not_recommends = [lec.id for lec in student.not_recommends.all()]
+
+        print(college, department, major, not_recommends)
+
+
+    expected_credit = int(options.get('expected_credit')) if 'expected_credit' in options else 15
         
     # some recursive method to construct tt?
     lectures = []
