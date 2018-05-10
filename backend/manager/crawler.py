@@ -76,7 +76,10 @@ def run(crawler):
         global detail
 
         total_cnt = int(driver.find_element_by_xpath('//*[@id="content"]/div/div[3]/div[1]/div[1]/h3/span').text)
+        total fin = 0
         total_page = ((total_cnt-1)//10)+1
+        total_page_fin = 0
+        detail = 0
 
         type_select = driver.find_element_by_xpath('//*[@id="srchOpenSubmattFgCd"]')
         types = [x.text.strip() for x in type_select.find_elements_by_tag_name('option')]
