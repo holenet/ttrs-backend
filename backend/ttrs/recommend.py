@@ -12,11 +12,7 @@ def recommend(_options):
         recommends = {}
         num_recommends = 3
         for i in range(num_recommends):
-            lectures = []
-            for j in range(expected_credit):
-                lecture_id = random.randrange(1, 100)
-                lectures.append(lecture_id)
-
+            lectures = build_timetable(student_id, expected_credit)
             score = get_score(lectures)
 
             print('tt {}:'.format(i), lectures, score)
@@ -29,6 +25,14 @@ def recommend(_options):
     except Exception as e:
         print(e)
 
+
+def build_timetable(student_id, expected_credit):
+    lectures = []
+    for j in range(expected_credit):
+        lecture_id = random.randrange(1,100)
+        lectures.append(lecture_id)
+
+    return lectures
 
 def get_score(lectures):
     return random.randrange(1,100)
