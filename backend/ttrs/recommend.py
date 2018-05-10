@@ -4,24 +4,18 @@ import random
 from .models import Student
 
 
-def recommend(_options):
-    try:
-        options = json.loads(_options)
+def recommend(options):
+    print(options)
 
-        print(options)
+    recommends = []
+    num_recommends = 3
+    for i in range(num_recommends):
+        lectures = build_timetable(options)
+        score = get_score(lectures, options)
 
-        recommends = []
-        num_recommends = 3
-        for i in range(num_recommends):
-            lectures = build_timetable(options)
-            score = get_score(lectures, options)
+        recommends.append({"lectures": lectures, "score": score})
 
-            recommends.append({"lectures": lectures, "score": score})
-
-        return recommends
-
-    except Exception as e:
-        print(e)
+    return recommends
 
 
 def build_timetable(options):

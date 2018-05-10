@@ -1,3 +1,5 @@
+import json
+
 from django.core.exceptions import FieldError
 from rest_framework import generics
 from rest_framework.exceptions import ParseError
@@ -7,7 +9,7 @@ from rest_framework.response import Response
 
 from .permissions import IsStudentOrReadOnly, IsOtherStudent
 from .serializers import StudentSerializer, CollegeSerializer, DepartmentSerializer, MajorSerializer, \
-    CourseSerializer, LectureSerializer, EvaluationSerializer, EvaluationDetailSerializer
+    CourseSerializer, LectureSerializer, EvaluationSerializer, EvaluationDetailSerializer, RecommendSerializer
 from .models import Student, College, Department, Major, Course, Lecture, Evaluation
 
 from .recommend import recommend
@@ -154,9 +156,12 @@ class MajorDetail(generics.RetrieveAPIView):
 
 
 class RecommendView(generics.RetrieveAPIView):
+    serializer_class = RecommendSerializer
     permission_classes = (AllowAny,)
 
     def get(self, request):
-        options = request.query_params.get('options')
-        return Response(recommend(options))
+        options = json.loads(request.query_params.get('options'))
+        result = recommend(options)
+        recommends = RecommendSerializer(result, many=True)
+        return Response(recommends.data)
 
