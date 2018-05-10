@@ -90,7 +90,7 @@ def run(crawler):
             else:
                 return
 
-        crawler.status = 'finished {} lectures'.format(total_fin)
+        crawler.status = 'finished {} lectures'.format(total_cnt)
         crawler.save()
 
         driver.close()
