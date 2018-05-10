@@ -14,9 +14,9 @@ def recommend(_options):
             lectures = build_timetable(options)
             score = get_score(lectures)
 
-            recommends['tt {}'.format(i)] = (lectures, score)
+            recommends['tt {}'.format(i)] = {"lectures": lectures, "score": score}
 
-        return json.dumps(recommends)
+        return recommends
 
     except Exception as e:
         print(e)

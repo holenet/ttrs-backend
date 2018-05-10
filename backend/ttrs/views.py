@@ -7,7 +7,7 @@ from rest_framework.response import Response
 
 from .permissions import IsStudentOrReadOnly, IsOtherStudent
 from .serializers import StudentSerializer, CollegeSerializer, DepartmentSerializer, MajorSerializer, \
-    CourseSerializer, LectureSerializer, EvaluationSerializer, EvaluationDetailSerializer, RecommendSerializer
+    CourseSerializer, LectureSerializer, EvaluationSerializer, EvaluationDetailSerializer
 from .models import Student, College, Department, Major, Course, Lecture, Evaluation
 
 
