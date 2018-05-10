@@ -29,8 +29,9 @@ class StudentSerializer(serializers.ModelSerializer):
     def validate_email(self, email):
         if email.split('@')[1] != 'snu.ac.kr':
             raise ValidationError("The host must be 'snu.ac.kr'.")
-        if Student.objects.filter(email=email).exists():
-            raise ValidationError("A Student with that email already exists.")
+        student = Student.objects.filter(email=email).first()
+        if student and student != self.instance:
+            raise ValidationError("A student with that email already exists.")
         return email
 
     def validate(self, data):
