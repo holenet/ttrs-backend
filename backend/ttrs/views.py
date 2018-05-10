@@ -15,7 +15,7 @@ class FilterAPIView(generics.GenericAPIView):
     """
     Custom supporting APIView for filtering queryset based on query_params.
 
-    By extend this class, the APIView will automatically filter queryset if the request
+    By extending this class, the APIView will automatically filter queryset if the request
     has query_params.
     Keys of the query_params MUST be a valid key of the function 'QuerySet.filter', or
     raises ParseError with status 400.
@@ -151,18 +151,12 @@ class MajorDetail(generics.RetrieveAPIView):
     serializer_class = MajorSerializer
     permission_classes = (AllowAny,)
 
+from .recommend import recommend
 
-class RecommendView(generics.ListCreateAPIView):
-    serializer_class = RecommendSerializer
+class RecommendView(generics.RetrieveAPIView):
     permission_classes = (AllowAny,)
 
-    def get_queryset(self):
-        return []
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        return Response(serializer.data)
-
+    def get(self, request):
+        options = request.query_params.get('options')
+        return Response(recommend(options))
 

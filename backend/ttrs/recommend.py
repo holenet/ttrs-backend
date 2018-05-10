@@ -6,6 +6,8 @@ def recommend(_options):
     try:
         options = json.loads(_options)
 
+        print(options)
+
         recommends = {}
         num_recommends = 3
         for i in range(num_recommends):

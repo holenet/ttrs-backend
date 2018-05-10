@@ -143,13 +143,3 @@ class CollegeSerializer(serializers.ModelSerializer):
         model = College
         fields = '__all__'
 
-
-class RecommendSerializer(serializers.Serializer):
-    options = serializers.CharField(write_only=True)
-    recommends = serializers.CharField(read_only=True)
-
-    def create(self, data):
-        instance = {}
-        instance['recommends'] = recommend(data.get('options'))
-        return instance
-
