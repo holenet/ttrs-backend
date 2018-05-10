@@ -140,7 +140,7 @@ def crawl_type(crawler, driver, tid, type):
             # goes to page i
             driver.execute_script('fnGotoPage({})'.format(i))
             # crawls a table of lectures in current page
-            print('====================={} page {}/{}====================='.format(type, i, section_page))
+            print('='*20+'{} page {}/{}'.format(type, i, section_page)+'='*20)
             lectures = crawl(driver)
             # parses given data and saves it in DB
             parse(crawler.year, crawler.semester, lectures, '')
@@ -148,7 +148,7 @@ def crawl_type(crawler, driver, tid, type):
             total_fin += len(lectures)
             total_page_fin += 1
 
-        print('=====================finished {}====================='.format(type))
+        print('='*20+'finished {}'.format(type)+'='*20)
 
     else: # type == '교양'
         field_select = driver.find_element_by_xpath('//*[@id="srchOpenUpSbjtFldCd"]')
@@ -182,7 +182,7 @@ def crawl_type(crawler, driver, tid, type):
                     # goes to page p
                     driver.execute_script('fnGotoPage({})'.format(p))
                     # crawls a table of lectures in current page
-                    print('====================={} ({}-{}) page {}/{}====================='.format(type, field, area, p, section_page))
+                    print('='*20+'{} ({}-{}) page {}/{}'.format(type, field, area, p, section_page)+'='*20)
                     lectures = crawl(driver)
                     # parses given data and saves it in DB
                     parse(crawler.year, crawler.semester, lectures, field + '-' + area)
@@ -190,7 +190,7 @@ def crawl_type(crawler, driver, tid, type):
                     total_fin += len(lectures)
                     total_page_fin += 1
 
-                print('=====================finished {} ({}-{})====================='.format(type, field, area))
+                print('='*20+'finished {} ({}-{})'.format(type, field, area)+'='*20)
 
 
 def crawl(driver):
@@ -349,7 +349,7 @@ def parse(year, semester, lectures, field_name):
                                                     name=lecture['name'],
                                                     type=lecture['type'],
                                                     field=field_name,
-                                                    grade=int(lecture['grade'][0]) if lecture['grade'] != '' else 0,
+                                                    grade=int(lecture['grade'][0]) if not lecture['grade'] else 0,
                                                     credit=int(lecture['credit'].split('-')[0]),
                                                     college=college_instance,
                                                     department=department_instance,
