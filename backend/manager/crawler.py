@@ -90,7 +90,7 @@ def run(crawler):
             else:
                 return
 
-        crawler.status = 'finished {} lectures'.format(total_cnt)
+        crawler.status = 'finished {} lectures'.format(total_fin)
         crawler.save()
 
         driver.close()
@@ -100,7 +100,7 @@ def run(crawler):
 
     except NoSuchElementException as e:
         print(e)
-        crawler.status = str('finished {} lectures due to error'.format(total_cnt))
+        crawler.status = str('finished {} lectures due to error'.format(total_fin))
         crawler.save()
 
     except Exception as e:
