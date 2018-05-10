@@ -1,5 +1,6 @@
-import json
 import random
+
+from django.core.exceptions import ObjectDoesNotExist
 
 from .models import Student
 
@@ -20,16 +21,21 @@ def recommend(options):
 
 def build_timetable(options):
     if 'student_id' in options:
-        student_id = int(options.get('student_id'))
-        student = Student.objects.get(id=student_id)
+        try:
+            student_id = int(options.get('student_id'))
+            student = Student.objects.get(id=student_id)
 
-        # grab some info..
-        college = student.college
-        department = student.department
-        major = student.major
-        not_recommends = [lec.id for lec in student.not_recommends.all()]
+            # grab some info..
+            college = student.college
+            department = student.department
+            major = student.major
+            not_recommends = [lec.id for lec in student.not_recommends.all()]
 
-        print(college, department, major, not_recommends)
+            print(college, department, major, not_recommends)
+
+        except ObjectDoesNotExist as e:
+            print(e)
+            return
 
 
     expected_credit = int(options.get('expected_credit')) if 'expected_credit' in options else 15

@@ -9,7 +9,7 @@ from rest_framework.response import Response
 
 from .permissions import IsStudentOrReadOnly, IsOtherStudent
 from .serializers import StudentSerializer, CollegeSerializer, DepartmentSerializer, MajorSerializer, \
-    CourseSerializer, LectureSerializer, EvaluationSerializer, EvaluationDetailSerializer, RecommendSerializer
+    CourseSerializer, LectureSerializer, EvaluationSerializer, EvaluationDetailSerializer, OptionSerializer, RecommendSerializer
 from .models import Student, College, Department, Major, Course, Lecture, Evaluation
 
 from .recommend import recommend
@@ -156,12 +156,14 @@ class MajorDetail(generics.RetrieveAPIView):
 
 
 class RecommendView(generics.RetrieveAPIView):
+    queryset = []
     serializer_class = RecommendSerializer
     permission_classes = (AllowAny,)
 
     def get(self, request):
         options = json.loads(request.query_params.get('options'))
-        result = recommend(options)
+        options = OptionSerializer(options)
+        result = recommend(options.data)
         recommends = RecommendSerializer(result, many=True)
         return Response(recommends.data)
 
