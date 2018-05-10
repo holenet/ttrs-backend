@@ -24,6 +24,11 @@ class IsStudentOrReadOnly(permissions.BasePermission):
         return True
 
 
+class IsTheStudent(permissions.BasePermission):
+    def has_object_permission(self, request, view, evaluation):
+        return request.user.username == evaluation.author.username
+
+
 class IsOtherStudent(permissions.BasePermission):
     def has_permission(self, request, view):
         try:

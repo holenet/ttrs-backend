@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.status import HTTP_201_CREATED
 
-from .permissions import IsStudentOrReadOnly, IsOtherStudent, IsStudent
+from .permissions import IsStudentOrReadOnly, IsOtherStudent, IsStudent, IsTheStudent
 from .serializers import StudentSerializer, CollegeSerializer, DepartmentSerializer, MajorSerializer, \
     CourseSerializer, LectureSerializer, EvaluationSerializer, EvaluationDetailSerializer, MyTimeTableSerializer, \
     BookmarkedTimeTableSerializer, ReceivedTimeTableSerializer, SendTimeTableSerializer, CopyTimeTableSerializer
@@ -95,7 +95,7 @@ class EvaluationList(FilterAPIView, generics.ListCreateAPIView):
 class EvaluationDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Evaluation.objects.all()
     serializer_class = EvaluationDetailSerializer
-    permission_classes = (IsAuthenticated, IsStudentOrReadOnly)
+    permission_classes = (IsAuthenticated, IsTheStudent)
 
 
 class EvaluationLikeIt(generics.RetrieveDestroyAPIView):
