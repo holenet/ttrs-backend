@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from .models import Crawler
 
@@ -21,6 +22,14 @@ class CrawlerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Crawler
         exclude = ('cancel_flag',)
+
+    def validate(self, data):
+        request = self.context.get('request')
+        if request.method == 'POST':
+            if Crawler.objects.filter(status__startswith='creating').exists() or Crawler.objects.filter(status__startswith='running').exists():
+                raise ValidationError('There already exists active crawler')
+
+        return data
 
 
 class CrawlerDetailSerializer(CrawlerSerializer):
