@@ -155,14 +155,12 @@ class MajorDetail(generics.RetrieveAPIView):
     permission_classes = (AllowAny,)
 
 
-class RecommendView(generics.RetrieveAPIView):
-    queryset = []
+class RecommendView(generics.ListAPIView):
     serializer_class = RecommendSerializer
     permission_classes = (AllowAny,)
 
-    def get(self, request):
-        options = request.query_params
-        result = recommend(options)
-        recommends = RecommendSerializer(result, many=True)
-        return Response(recommends.data)
+    def get_queryset(self):
+        options = self.request.query_params
+        recommends = recommend(options)
+        return RecommendSerializer(recommends, many=True).data
 
