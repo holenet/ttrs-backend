@@ -161,6 +161,5 @@ class RecommendView(generics.ListAPIView):
 
     def get_queryset(self):
         options = self.request.query_params
-        recommends = recommend(options)
-        return RecommendSerializer(recommends, many=True).data
+        return recommend(options)
 
