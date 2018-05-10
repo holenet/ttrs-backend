@@ -26,7 +26,7 @@ class CrawlerSerializer(serializers.ModelSerializer):
     def validate(self, data):
         request = self.context.get('request')
         if request.method == 'POST':
-            if Crawler.objects.filter(status__contains='creating').exists() or Crawler.objects.filter(status__contains='running').exists():
+            if Crawler.objects.filter(status__startswith='creating').exists() or Crawler.objects.filter(status__startswith='running').exists():
                 raise ValidationError('There already exists active crawler')
 
         return data
