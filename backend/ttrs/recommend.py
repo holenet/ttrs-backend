@@ -10,13 +10,13 @@ def recommend(_options):
 
         print(options)
 
-        recommends = {}
+        recommends = []
         num_recommends = 3
         for i in range(num_recommends):
             lectures = build_timetable(options)
             score = get_score(lectures, options)
 
-            recommends['tt {}'.format(i)] = {"lectures": lectures, "score": score}
+            recommends.append({"lectures": lectures, "score": score})
 
         return recommends
 
