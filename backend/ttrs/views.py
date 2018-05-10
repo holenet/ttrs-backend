@@ -10,11 +10,12 @@ from .permissions import IsStudentOrReadOnly, IsOtherStudent, IsStudent, IsTheSt
 from .serializers import StudentSerializer, CollegeSerializer, DepartmentSerializer, MajorSerializer, \
     CourseSerializer, LectureSerializer, EvaluationSerializer, EvaluationDetailSerializer, MyTimeTableSerializer, \
     BookmarkedTimeTableSerializer, ReceivedTimeTableSerializer, SendTimeTableSerializer, CopyTimeTableSerializer, \
-    RecommendSerializer
+    RecommendSerializer, TimeTableSerializer
 from .models import Student, College, Department, Major, Course, Lecture, Evaluation, MyTimeTable, BookmarkedTimeTable, \
     ReceivedTimeTable, TimeTable
 
 from .recommend import recommend
+
 
 class FilterAPIView(generics.GenericAPIView):
     """
@@ -134,7 +135,7 @@ class MyTimeTableList(FilterAPIView, generics.ListCreateAPIView):
     def perform_create(self, serializer):
         owner = Student.objects.get_by_natural_key(self.request.user.username)
         try:
-            old_time_table = MyTimeTable.objects.get(year=self.request.data['year'], semester=self.request.data['semester'], owner=owner)
+            old_time_table = MyTimeTable.objects.get(year=serializer.year, semester=serializer.semester, owner=owner)
             old_time_table.delete()
         except ObjectDoesNotExist:
             pass
@@ -294,10 +295,10 @@ class MajorDetail(generics.RetrieveAPIView):
 
 
 class RecommendView(generics.ListAPIView):
-    serializer_class = RecommendSerializer
-    permission_classes = (AllowAny,)
+    serializer_class = TimeTableSerializer
+    permission_classes = (IsAuthenticated, IsStudent)
 
     def get_queryset(self):
-        options = self.request.query_params
-        return recommend(options)
-
+        options = self.request.query_params.copy()
+        student = Student.objects.get_by_natural_key(self.request.user.username)
+        return recommend(options, student)

@@ -46,6 +46,30 @@ class Lecture(models.Model):
     instructor = models.CharField(max_length=20)
     note = models.TextField(blank=True)
 
+    @staticmethod
+    def have_same_course(lectures):
+        codes = set()
+        for lecture in lectures:
+            if lecture.course.code in codes:
+                return True
+            codes.add(lecture.course.code)
+        return False
+
+    @staticmethod
+    def does_overlap(lectures):
+        days = {}
+        for lecture in lectures:
+            for time_slot in lecture.time_slots.all():
+                if time_slot.day_of_week not in days:
+                    days[time_slot.day_of_week] = []
+                days[time_slot.day_of_week].append((time_slot.start_time, time_slot.end_time))
+        for times in days.values():
+            times.sort()
+            for i in range(len(times)-1):
+                if times[i][1] > times[i+1][0]:
+                    return True
+        return False
+
     def __str__(self):
         return '{}-{} ({}:{})'.format(self.course, self.instructor, self.year, self.semester)
 

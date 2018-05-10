@@ -1,53 +1,81 @@
 import random
 
-from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Max, Min
 
-from .models import Student
+from ttrs.models import Lecture, TimeTable
 
 
-def recommend(options):
-    print(options)
+def recommend(options, student):
+    info = {}
+    info['year'] = int(options.get('year', None))
+    info['semester'] = options.get('semester', None)
+    if not info['year'] or not info['semester']:
+        return []
+    info['expected_credit'] = int(options.get('expected_credit', 15))
 
+    print(info)
     recommends = []
+    num_candidates = 100
     num_recommends = 3
-    for i in range(num_recommends):
-        lectures = build_timetable(options)
-        score = get_score(lectures, options)
-
-        recommends.append({"lectures": lectures, "score": score})
-
-    return recommends
-
-
-def build_timetable(options):
-    if 'student_id' in options:
-        try:
-            student_id = int(options.get('student_id'))
-            student = Student.objects.get(id=student_id)
-
-            # grab some info..
-            college = student.college
-            department = student.department
-            major = student.major
-            not_recommends = [lec.id for lec in student.not_recommends.all()]
-
-            print(college, department, major, not_recommends)
-
-        except ObjectDoesNotExist as e:
-            print(e)
-            return
+    for i in range(num_candidates):
+        print('table', i)
+        time_table = build_timetable(info)
+        recommends.append(time_table)
+    recommends.sort(key=lambda x: get_score(x, info, student), reverse=True)
+    print([get_score(x, info, student) for x in recommends])
+    return recommends[:num_recommends]
 
 
-    expected_credit = int(options.get('expected_credit')) if 'expected_credit' in options else 15
-        
-    # some recursive method to construct tt?
-    lectures = []
-    for j in range(expected_credit):
-        lecture_id = random.randrange(1,100)
-        lectures.append(lecture_id)
-
-    return lectures
+def build_timetable(info):
+    lectures = get_lectures(info['expected_credit'], Lecture.objects.filter(year=info['year'], semester=info['semester']), [])
+    time_table = TimeTable(title='table', year=info['year'], semester=info['semester'])
+    time_table.save()
+    for lecture in lectures:
+        time_table.lectures.add(lecture)
+    return time_table
 
 
-def get_score(lectures, options):
-    return random.randrange(1,100)
+def get_lectures(remain_credit, remain_lectures, lectures):
+    if -3 < remain_credit < 3:
+        return lectures
+    while True:
+        if random.randint(1, 20)==1:
+            return lectures
+        lecture = get_random_object(remain_lectures)
+        lectures.append(lecture)
+        if not Lecture.have_same_course(lectures) and not Lecture.does_overlap(lectures):
+            break
+        lectures = lectures[:-1]
+    remain_lectures.exclude(id=lecture.id)
+    remain_credit -= lecture.course.credit
+    return get_lectures(remain_credit, remain_lectures, lectures)
+
+
+def get_random_object(objects):
+    min_id = objects.aggregate(min_id=Min('id'))['min_id']
+    max_id = objects.aggregate(max_id=Max('id'))['max_id']
+    while True:
+        pk = random.randint(min_id, max_id)
+        instance = objects.filter(pk=pk).first()
+        if instance:
+            return instance
+
+
+def get_score(time_table, info, student):
+    score = 0
+    total_credit = 0
+    for lecture in time_table.lectures.all():
+        course = lecture.course
+        total_credit += course.credit
+        if course.college == student.college:
+            score += 1
+        if course.department and course.department == student.department:
+            score += 2
+        if course.major and course.major == student.major:
+            score += 3
+            if course.type == '전선':
+                score += 3
+            if course.type == '전필':
+                score += 3
+    score += info['expected_credit']**2
+    return score

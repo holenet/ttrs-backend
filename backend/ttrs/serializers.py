@@ -112,40 +112,25 @@ class TimeTableSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ('owner', 'year', 'semester')
 
-    @staticmethod
-    def time_to_minute(time):
-        hour, minute = map(int, time.split(':'))
-        return hour * 60 + minute
-
     def validate_lectures(self, lectures):
-        codes = set()
-        for lecture in lectures:
-            if lecture.course.code in codes:
-                raise ValidationError("All lectures should have distinct courses.")
-            codes.add(lecture.course.code)
-        days = {}
-        for lecture in lectures:
-            for time_slot in lecture.time_slots.all():
-                start_minute = self.time_to_minute(time_slot.start_time)
-                end_minute = self.time_to_minute(time_slot.end_time)
-                if time_slot.day_of_week not in days:
-                    days[time_slot.day_of_week] = []
-                days[time_slot.day_of_week].append((start_minute, end_minute))
-        for times in days.values():
-            times.sort()
-            for i in range(len(times)-1):
-                if times[i][1] > times[i+1][0]:
-                    raise ValidationError("Time slots of lectures should not overlap.")
+        if not lectures:
+            raise ValidationError("There should be at least one lecture.")
+        year, semester = lectures[0].year, lectures[0].semester
+        for lecture in lectures[1:]:
+            if lecture.year != year or lecture.semester != semester:
+                raise ValidationError("Lectures should share same year and semester.")
+        if Lecture.have_same_course(lectures):
+            raise ValidationError("All lectures should have distinct courses.")
+        if Lecture.does_overlap(lectures):
+            raise ValidationError("Time slots of lectures should not overlap.")
+        self.year = year
+        self.semester = semester
         return lectures
 
-    def validate(self, data):
-        error_lectures = []
-        for lecture in data['lectures']:
-            if lecture.year != data['year'] or lecture.semester != data['semester']:
-                error_lectures.append(lecture.id)
-        if error_lectures:
-            raise ValidationError({"Lectures should belong to the year and semester.": error_lectures})
-        return data
+    def create(self, validated_data):
+        validated_data['year'] = self.year
+        validated_data['semester'] = self.semester
+        return super(TimeTableSerializer, self).create(validated_data)
 
 
 class MyTimeTableSerializer(TimeTableSerializer):
