@@ -10,6 +10,7 @@ from .serializers import StudentSerializer, CollegeSerializer, DepartmentSeriali
     CourseSerializer, LectureSerializer, EvaluationSerializer, EvaluationDetailSerializer
 from .models import Student, College, Department, Major, Course, Lecture, Evaluation
 
+from .recommend import recommend
 
 class FilterAPIView(generics.GenericAPIView):
     """
@@ -151,7 +152,6 @@ class MajorDetail(generics.RetrieveAPIView):
     serializer_class = MajorSerializer
     permission_classes = (AllowAny,)
 
-from .recommend import recommend
 
 class RecommendView(generics.RetrieveAPIView):
     permission_classes = (AllowAny,)
