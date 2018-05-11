@@ -115,7 +115,9 @@ class TimeTableSerializer(serializers.ModelSerializer):
 
     def validate_lectures(self, lectures):
         if not lectures:
-            raise ValidationError("There should be at least one lecture.")
+            if self.context['request'].method == 'POST':
+                raise ValidationError("There should be at least one lecture.")
+            return lectures
         year, semester = lectures[0].year, lectures[0].semester
         for lecture in lectures[1:]:
             if lecture.year != year or lecture.semester != semester:
@@ -129,8 +131,10 @@ class TimeTableSerializer(serializers.ModelSerializer):
         return lectures
 
     def create(self, validated_data):
-        validated_data['year'] = self.year
-        validated_data['semester'] = self.semester
+        if hasattr(self, 'year'):
+            validated_data['year'] = self.year
+        if hasattr(self, 'semester'):
+            validated_data['semester'] = self.semester
         return super(TimeTableSerializer, self).create(validated_data)
 
 
