@@ -48,7 +48,7 @@ def get_lectures(remain_credit, remain_lectures, lectures, info):
             return lectures
         lecture = get_random_object(remain_lectures, info['min_id'], info['max_id'])
         lectures.append(lecture)
-        if not Lecture.have_same_course(lectures) and not Lecture.does_overlap(lectures):
+        if not Lecture.have_same_course(lectures) and not Lecture.do_overlap(lectures):
             break
         lectures = lectures[:-1]
     remain_lectures.exclude(id=lecture.id)

@@ -56,7 +56,7 @@ class Lecture(models.Model):
         return False
 
     @staticmethod
-    def does_overlap(lectures):
+    def do_overlap(lectures):
         days = {}
         for lecture in lectures:
             for time_slot in lecture.time_slots.all():

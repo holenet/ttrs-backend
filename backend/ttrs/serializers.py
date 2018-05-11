@@ -122,7 +122,7 @@ class TimeTableSerializer(serializers.ModelSerializer):
                 raise ValidationError("Lectures should share same year and semester.")
         if Lecture.have_same_course(lectures):
             raise ValidationError("All lectures should have distinct courses.")
-        if Lecture.does_overlap(lectures):
+        if Lecture.do_overlap(lectures):
             raise ValidationError("Time slots of lectures should not overlap.")
         self.year = year
         self.semester = semester
