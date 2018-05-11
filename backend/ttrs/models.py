@@ -1,6 +1,8 @@
 from django.contrib.auth.models import User, UserManager
 from django.db import models
 
+semester_choices = (('1학기', '1학기'), ('2학기', '2학기'), ('여름학기', '여름학기'), ('겨울학기', '겨울학기'))
+
 
 class Student(User):
     class Meta:
@@ -38,11 +40,35 @@ class Lecture(models.Model):
     time_slots = models.ManyToManyField('ttrs.TimeSlot', related_name='lectures', blank=True)
 
     year = models.PositiveSmallIntegerField()
-    semester = models.CharField(max_length=1)
+    semester = models.CharField(max_length=10, choices=semester_choices)
     number = models.CharField(max_length=10)
 
     instructor = models.CharField(max_length=20)
     note = models.TextField(blank=True)
+
+    @staticmethod
+    def have_same_course(lectures):
+        codes = set()
+        for lecture in lectures:
+            if lecture.course.code in codes:
+                return True
+            codes.add(lecture.course.code)
+        return False
+
+    @staticmethod
+    def do_overlap(lectures):
+        days = {}
+        for lecture in lectures:
+            for time_slot in lecture.time_slots.all():
+                if time_slot.day_of_week not in days:
+                    days[time_slot.day_of_week] = []
+                days[time_slot.day_of_week].append((time_slot.start_time, time_slot.end_time))
+        for times in days.values():
+            times.sort()
+            for i in range(len(times)-1):
+                if times[i][1] > times[i+1][0]:
+                    return True
+        return False
 
     def __str__(self):
         return '{}-{} ({}:{})'.format(self.course, self.instructor, self.year, self.semester)
@@ -53,25 +79,57 @@ class Evaluation(models.Model):
     lecture = models.ForeignKey('ttrs.Lecture', related_name='evaluations', on_delete=models.CASCADE)
     rate = models.PositiveSmallIntegerField()
     comment = models.TextField()
-    like_it = models.ManyToManyField('ttrs.Student', related_name='like_its', default=[], blank=True)
+    like_it = models.ManyToManyField('ttrs.Student', related_name='like_its', blank=True)
 
     def __str__(self):
         return '{}-{}'.format(self.lecture, self.author)
 
 
 class TimeTable(models.Model):
-    owner = models.ForeignKey('ttrs.Student', related_name='time_tables', on_delete=models.CASCADE)
-    sender = models.ForeignKey('ttrs.Student', related_name='sent_time_tables', on_delete=models.SET_NULL, blank=True, null=True)
+    title = models.CharField(max_length=100, default='time table')
+    memo = models.TextField(blank=True)
 
-    type = models.CharField(max_length=10)
-
-    title = models.CharField(max_length=100)
-    memo = models.TextField()
-
+    year = models.PositiveSmallIntegerField()
+    semester = models.CharField(max_length=10, choices=semester_choices)
     lectures = models.ManyToManyField('ttrs.Lecture', related_name='lectures', blank=True)
 
+    def __init__(self, *args, other=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if other is not None:
+            # copy data from other TimeTable
+            self.title = other.title
+            self.memo = other.memo
+            self.year = other.year
+            self.semester = other.semester
+            self.pending_lectures = other.lectures.all()
+
+    def save_m2m(self):
+        """
+        Supporting save method for copying ManyToManyField.
+        """
+        self.save()
+        self.lectures.set(self.pending_lectures)
+        self.save()
+
     def __str__(self):
-        return '{}-{}[{}] ({})'.format(self.owner, self.title, self.type, self.lectures.count())
+        return '{} ({}:{})'.format(self.title, self.year, self.semester)
+
+
+class MyTimeTable(TimeTable):
+    owner = models.ForeignKey('ttrs.Student', related_name='my_time_tables', on_delete=models.CASCADE)
+    modified_at = models.DateTimeField(auto_now=True)
+
+
+class BookmarkedTimeTable(TimeTable):
+    owner = models.ForeignKey('ttrs.Student', related_name='bookmarked_time_tables', on_delete=models.CASCADE)
+    bookmarked_at = models.DateTimeField(auto_now_add=True)
+
+
+class ReceivedTimeTable(TimeTable):
+    owner = models.ForeignKey('ttrs.Student', related_name='received_time_tables', on_delete=models.CASCADE)
+    sender = models.ForeignKey('ttrs.Student', related_name='sent_time_tables', on_delete=models.SET_NULL, null=True)
+    sent_at = models.DateTimeField(auto_now_add=True)
+    received_at = models.DateTimeField(null=True, blank=True)
 
 
 class TimeSlot(models.Model):
@@ -79,7 +137,7 @@ class TimeSlot(models.Model):
     start_time = models.CharField(max_length=10)
     end_time = models.CharField(max_length=10)
 
-    classroom = models.ForeignKey('ttrs.Classroom', on_delete=models.CASCADE, null=True, blank=True)
+    classroom = models.ForeignKey('ttrs.Classroom', related_name='time_slots', on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         if self.classroom:
@@ -91,11 +149,11 @@ class Classroom(models.Model):
     building = models.CharField(max_length=10)
     room_no = models.CharField(max_length=10)
 
-    def __str__(self):
-        return '{}-{}'.format(self.building, self.room_no)
-
     class Meta:
         unique_together = ('building', 'room_no')
+
+    def __str__(self):
+        return '{}-{}'.format(self.building, self.room_no)
 
 
 class College(models.Model):
