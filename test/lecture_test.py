@@ -26,6 +26,15 @@ def lecture_test(uid, upwd):
     else:
         print('Error accessing Lecture list with keyword.')
 
+    filter = base+'?instructor__contains='+str(lecture.instructor)
+    print()
+    print('testing '+'\033[1m'+filter+'\033[0m'+'...')
+    res = requests.get(filter, auth=auth)
+    if res.status_code == 200:
+        print('Successfully accessed Lecture list with payload.')
+    else:
+        print('Error accessing Lecture list with keyword.')
+
     detail = base+str(lecture.id)+'/'
     print()
     print('testing '+'\033[1m'+detail+'\033[0m'+'...')
