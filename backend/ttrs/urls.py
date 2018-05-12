@@ -29,11 +29,8 @@ urlpatterns = [
     path('time-tables/send/', views.SendTimeTable.as_view()),
 
     path('colleges/', views.CollegeList.as_view()),
-    path('colleges/<int:pk>/', views.CollegeDetail.as_view()),
     path('departments/', views.DepartmentList.as_view()),
-    path('departments/<int:pk>/', views.DepartmentDetail.as_view()),
     path('majors/', views.MajorList.as_view()),
-    path('majors/<int:pk>/', views.MajorDetail.as_view()),
 
     path('recommends/', views.RecommendView.as_view()),
 ]

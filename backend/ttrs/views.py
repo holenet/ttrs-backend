@@ -258,13 +258,7 @@ class SendTimeTable(CopyTimeTable):
         return new_time_table.id
 
 
-class CollegeList(generics.ListAPIView):
-    queryset = College.objects.all()
-    serializer_class = CollegeSerializer
-    permission_classes = (AllowAny,)
-
-
-class CollegeDetail(generics.RetrieveAPIView):
+class CollegeList(FilterAPIView, generics.ListAPIView):
     queryset = College.objects.all()
     serializer_class = CollegeSerializer
     permission_classes = (AllowAny,)
@@ -276,19 +270,7 @@ class DepartmentList(FilterAPIView, generics.ListAPIView):
     permission_classes = (AllowAny,)
 
 
-class DepartmentDetail(generics.RetrieveAPIView):
-    queryset = Department.objects.all()
-    serializer_class = DepartmentSerializer
-    permission_classes = (AllowAny,)
-
-
 class MajorList(FilterAPIView, generics.ListAPIView):
-    queryset = Major.objects.all()
-    serializer_class = MajorSerializer
-    permission_classes = (AllowAny,)
-
-
-class MajorDetail(generics.RetrieveAPIView):
     queryset = Major.objects.all()
     serializer_class = MajorSerializer
     permission_classes = (AllowAny,)
