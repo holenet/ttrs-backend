@@ -1,4 +1,3 @@
-print('Cleaning models...')
 
 def clean_crawlers():
     from manager.models import Crawler
@@ -60,6 +59,7 @@ def clean_classrooms():
             print(e)
 
 
+print('Cleaning models...')
 clean_crawlers()
 clean_students()
 clean_colleges()
