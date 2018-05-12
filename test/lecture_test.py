@@ -3,7 +3,7 @@ def lecture_test(uid, upwd):
     auth = (uid, upwd)
     base = 'http://localhost:8000/ttrs/lectures/'
 
-    import requests
+    import json, requests
     print()
     print('testing '+'\033[1m'+base+'\033[0m'+'...')
     
@@ -35,6 +35,15 @@ def lecture_test(uid, upwd):
     else:
         print('Error accessing Lecture list with keyword.')
 
+    print()
+    print('\033[1m'+'testing invalid data...'+'\033[0m')
+    filter = base+'?asdf=asdf'
+    res = requests.get(filter, auth=auth)
+    print(filter, res)
+    errors = json.loads(res.text)
+    for error in errors:
+        print(error, errors.get(error))
+
     detail = base+str(lecture.id)+'/'
     print()
     print('testing '+'\033[1m'+detail+'\033[0m'+'...')
@@ -43,3 +52,5 @@ def lecture_test(uid, upwd):
         print('Successfully accessed Lecture detail.')
     else:
         print('Error accessing Lecture detail.')
+
+
