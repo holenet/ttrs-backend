@@ -2,7 +2,7 @@ from django.core.exceptions import FieldError, ObjectDoesNotExist
 from django.utils import timezone
 from rest_framework import generics
 from rest_framework.exceptions import ParseError
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from rest_framework.response import Response
 from rest_framework.status import HTTP_201_CREATED
 
@@ -44,7 +44,7 @@ class FilterAPIView(generics.GenericAPIView):
 class StudentList(generics.ListAPIView):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAdminUser,)
 
 
 class StudentCreate(generics.CreateAPIView):
