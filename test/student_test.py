@@ -9,8 +9,7 @@ def student_test(uid, upwd):
     import requests
 
     # Test if objects are created with valid data.
-    print()
-    print('testing '+'\033[1m'+signup+'\033[0m'+'...')
+    print('\ntesting '+'\033[1m'+signup+'\033[0m'+'...')
     for i in range(1,4):
         data = {}
         data['username'] = 'stu{}'.format(i)
@@ -21,8 +20,7 @@ def student_test(uid, upwd):
         from ttrs.models import College
         data['college'] = College.objects.all()[0].id
 
-        print()
-        print('Creating student {}...'.format(i))
+        print('\nCreating student {}...'.format(i))
         res = requests.post(signup, data=data)
 
         if res.status_code == 201:
@@ -40,16 +38,14 @@ def student_test(uid, upwd):
     data['grade'] = 10
     data['college'] = 0
 
-    print()
-    print('\033[1m'+'testing invalid data...'+'\033[0m')
+    print('\n'+'\033[1m'+'testing invalid data...'+'\033[0m')
     res = requests.post(signup, data=data)
     errors = json.loads(res.text)
     for error in errors:
         print(error, errors.get(error))
 
     
-    print()
-    print('testing '+'\033[1m'+base+'\033[0m'+'...')
+    print('\n'+'testing '+'\033[1m'+base+'\033[0m'+'...')
     res = requests.get(base, auth=auth)
     if res.status_code == 200:
         print('Successfully accessed Student list.')

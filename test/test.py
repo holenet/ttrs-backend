@@ -12,17 +12,14 @@ from evaluation_test import evaluation_test
 uid = 'lame'
 upwd = 'qwertyasdf'
 
-print()
-print('\033[1m'+'='*15, 'Crawler Test', '='*15+'\033[0m')
+print('\n'+'\033[1m'+'='*15, 'Crawler Test', '='*15+'\033[0m')
 crawler_test(uid, upwd)
 
-print()
-print('\033[1m'+'='*15, 'Student Test', '='*15+'\033[0m')
+print('\n'+'\033[1m'+'='*15, 'Student Test', '='*15+'\033[0m')
 student_test(uid, upwd)
 
-print()
-print('\033[1m'+'='*15, 'Lecture Test', '='*15+'\033[0m')
+print('\n'+'\033[1m'+'='*15, 'Lecture Test', '='*15+'\033[0m')
 lecture_test(uid, upwd)
 
 print('\n'+'\033[1m'+'='*15, 'Evaluation Test', '='*15+'\033[0m')
-evaluation_test(uid, upwd)
+evaluation_test('stu1', 'qwertyasdf')

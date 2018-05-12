@@ -6,7 +6,7 @@ def evaluation_test(uid, upwd):
     import json, requests
     from ttrs.models import Lecture
 
-    print('\ntesting'+'\033[1m'+base+'\033[0m'+'...')
+    print('\ntesting '+'\033[1m'+base+'\033[0m'+'...')
     for i in range(1,4):
         data = {}
         data['rate'] = 5
@@ -14,7 +14,7 @@ def evaluation_test(uid, upwd):
         data['lecture'] = Lecture.objects.all()[i].id
 
         print('\nCreating Evaluation {}...'.format(i))
-        res = requests.post(base, auth=('stu1', 'qwertyasdf'), data=data)
+        res = requests.post(base, auth=auth, data=data)
 
         if res.status_code == 201:
             print('Successfully created Evaluation instance.')
@@ -23,3 +23,14 @@ def evaluation_test(uid, upwd):
             print('Error creating Evaluation instance.')
             print(res.text)
 
+    print('\n'+'\033[1m'+'testing invalid data...'+'\033[0m')
+    data = {}
+    data['rate'] = 99
+    data['comment'] = ''
+    data['lecture'] = 0
+
+    res = requests.post(base, auth=auth, data=data)
+    print(res)
+    errors = json.loads(res.text)
+    for error in errors:
+        print(error, errors.get(error))
