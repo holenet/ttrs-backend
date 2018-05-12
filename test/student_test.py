@@ -7,7 +7,7 @@ def student_test(uid, upwd):
 
     import requests
     print()
-    print('testing '+'\033[1m'+signup+'...'+'\033[0m')
+    print('testing '+'\033[1m'+signup+'\033[0m'+'...')
     for i in range(1,6):
         data = {}
         data['username'] = 'stu{}'.format(i)
@@ -28,7 +28,7 @@ def student_test(uid, upwd):
             print(res.text)
 
     print()
-    print('testing '+'\033[1m'+base+'\033[0m')
+    print('testing '+'\033[1m'+base+'\033[0m'+'...')
     res = requests.get(base, auth=auth)
     if res.status_code == 200:
         print('Successfully accessed Student list.')
