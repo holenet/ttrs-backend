@@ -10,8 +10,10 @@ from student_test import student_test
 uid = 'lame'
 upwd = 'qwertyasdf'
 
-print('='*15, 'Crawler Test', '='*15)
+print()
+print('\033[1m'+'='*15, 'Crawler Test', '='*15+'\033[0m')
 crawler_test(uid, upwd)
 
-print('='*15, 'Student Test', '='*15)
+print()
+print('\033[1m'+'='*15, 'Student Test', '='*15+'\033[0m')
 student_test(uid, upwd)
