@@ -6,6 +6,7 @@ sys.path.append(test_path)
 
 from crawler_test import crawler_test
 from student_test import student_test
+from lecture_test import lecture_test
 
 uid = 'lame'
 upwd = 'qwertyasdf'
@@ -17,3 +18,7 @@ crawler_test(uid, upwd)
 print()
 print('\033[1m'+'='*15, 'Student Test', '='*15+'\033[0m')
 student_test(uid, upwd)
+
+print()
+print('\033[1m'+'='*15, 'Lecture Test', '='*15+'\033[0m')
+lecture_test(uid, upwd)
