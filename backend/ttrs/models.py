@@ -104,7 +104,7 @@ class Evaluation(models.Model):
 
 
 class TimeTable(models.Model):
-    title = models.CharField(max_length=100, null=True, blank=True)
+    title = models.CharField(max_length=100, default='time table', blank=True)
     memo = models.TextField(blank=True)
 
     year = models.PositiveSmallIntegerField()
