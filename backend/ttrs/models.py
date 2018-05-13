@@ -57,13 +57,31 @@ class Lecture(models.Model):
 
     @staticmethod
     def do_overlap(lectures):
-        days = {}
+        whole_days = {}
         for lecture in lectures:
+            lecture_days = {}
             for time_slot in lecture.time_slots.all():
-                if time_slot.day_of_week not in days:
-                    days[time_slot.day_of_week] = []
-                days[time_slot.day_of_week].append((time_slot.start_time, time_slot.end_time))
-        for times in days.values():
+                if time_slot.day_of_week not in lecture_days:
+                    lecture_days[time_slot.day_of_week] = []
+                lecture_days[time_slot.day_of_week].append((time_slot.start_time, 1))
+                lecture_days[time_slot.day_of_week].append((time_slot.end_time, 0))
+            for day_of_week in lecture_days:
+                lecture_days[day_of_week].sort()
+                merged_times = []
+                cnt = 0
+                for time, start in lecture_days[day_of_week]:
+                    if start:
+                        if cnt == 0:
+                            merged_times.append([time])
+                        cnt += 1
+                    else:
+                        cnt -= 1
+                        if cnt == 0:
+                            merged_times[-1].append(time)
+                if day_of_week not in whole_days:
+                    whole_days[day_of_week] = []
+                whole_days[day_of_week].extend(merged_times)
+        for times in whole_days.values():
             times.sort()
             for i in range(len(times)-1):
                 if times[i][1] > times[i+1][0]:
@@ -86,7 +104,7 @@ class Evaluation(models.Model):
 
 
 class TimeTable(models.Model):
-    title = models.CharField(max_length=100, default='time table')
+    title = models.CharField(max_length=100, null=True, blank=True)
     memo = models.TextField(blank=True)
 
     year = models.PositiveSmallIntegerField()
