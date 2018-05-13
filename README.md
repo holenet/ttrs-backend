@@ -12,6 +12,13 @@ $ pip3 install django djangorestframework selenium
 $ git clone https://github.com/SWPP/ttrs-backend.git
 ```
 
+#### Cors headers
+On a development environment, you might run into the cors problem.
+To resolve this, install django-cors-headers.
+```console
+pip3 install django-cors-headers
+```
+
 ## Notice
 #### Crawling in server machine
 Installing chromium-browser and downgrading selenium seems to work.
