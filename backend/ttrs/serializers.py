@@ -142,6 +142,11 @@ class MyTimeTableSerializer(TimeTableSerializer):
     class Meta(TimeTableSerializer.Meta):
         model = MyTimeTable
 
+    def validate(self, data):
+        if not data['title']:
+            data['title'] = '{}년 {}'.format(self.year, self.semester)
+        return data
+
 
 class BookmarkedTimeTableSerializer(TimeTableSerializer):
     class Meta(TimeTableSerializer.Meta):

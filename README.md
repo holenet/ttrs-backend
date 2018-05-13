@@ -16,7 +16,7 @@ $ git clone https://github.com/SWPP/ttrs-backend.git
 On a development environment, you might run into the cors problem.
 To resolve this, install django-cors-headers.
 ```console
-pip3 install django-cors-headers
+$ pip3 install django-cors-headers
 ```
 
 ## Notice
