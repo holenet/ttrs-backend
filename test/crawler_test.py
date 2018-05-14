@@ -13,12 +13,10 @@ def crawler_test(uid, upwd):
     if res.status_code == 201:
         print('Successfully created Crawler instance.')
 
-        # Here too.
         import json
         cid = json.loads(res.text)['id']
         print('Running Crawler {}...'.format(cid))
 
-        # Here too... :(
         import time
         time.sleep(30)
 
