@@ -50,7 +50,7 @@ def student_test(uid, upwd):
     res = requests.get(base, auth=auth)
     if res.status_code == 200:
         print('Successfully accessed Student list.')
-        print(res.text)
+        #print(res.text)
     else:
         print('Error accessing Student list.')
         print(res.text)
