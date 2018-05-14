@@ -63,6 +63,10 @@ class StudentSerializer(serializers.ModelSerializer):
 
 
 class CourseSerializer(serializers.ModelSerializer):
+    college = serializers.StringRelatedField()
+    department = serializers.StringRelatedField()
+    major = serializers.StringRelatedField()
+
     class Meta:
         model = Course
         fields = '__all__'
