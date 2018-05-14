@@ -6,8 +6,6 @@ def crawler_test(uid, upwd):
     base = 'http://localhost:8000/manager/crawlers/'
     data = {'year':'2018', 'semester':'1학기'}
 
-    # I don't know the reason, but it works only if requests is imported here.
-    # Do you know why?
     import requests
     print('\n'+'testing '+'\033[1m'+base+'\033[0m'+'...')
     print('Creating crawler', data, '...')
