@@ -10,6 +10,7 @@ from course_test import course_test
 from lecture_test import lecture_test
 from evaluation_test import evaluation_test
 from my_tt_test import my_tt_test
+from bm_tt_test import bm_tt_test
 from time_tables_test import time_tables_test
 
 uid = 'lame'
@@ -33,6 +34,9 @@ evaluation = evaluation_test('stu1', 'qwertyasdf')
 print('\n'+'\033[1m'+'='*15, 'My TT Test', '='*15+'\033[0m')
 my_tt = my_tt_test('stu1', 'qwertyasdf')
 
+print('\n'+'\033[1m'+'='*15, 'My TT Test', '='*15+'\033[0m')
+bm_tt = bm_tt_test('stu1', 'qwertyasdf')
+
 print('\n'+'\033[1m'+'='*15, 'Time Tables Test', '='*15+'\033[0m')
 tts = time_tables_test('stu1', 'qwertyasdf')
 
@@ -44,4 +48,5 @@ print('Course Test:', course)
 print('Lecture Test:', lecture)
 print('Evaluation Test:', evaluation)
 print('My TT Test:', my_tt)
+print('Bookmarked TT Test:', bm_tt)
 print('Time Tables Test:', tts)
