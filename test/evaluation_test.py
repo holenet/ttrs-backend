@@ -42,6 +42,7 @@ def evaluation_test(uid, upwd):
     else:
         print('Error accessing Evaluation list.')
         print(res.content)
+        return False
 
     filter = base+'?id='+str(Lecture.objects.all()[0].id)
     print('\ntesting '+'\033[1m'+filter+'\033[0m')
@@ -51,6 +52,7 @@ def evaluation_test(uid, upwd):
     else:
         print('Error accessing Evaluation list with payload.')
         print(res.content)
+        return False
 
     filter = base+'?lecture__course__name__contains=글'
     print('\ntesting '+'\033[1m'+filter+'\033[0m')
@@ -60,6 +62,7 @@ def evaluation_test(uid, upwd):
     else:
         print('Error accessing Evaluation list with payload.')
         print(res.content)
+        return False
     
     detail = base+str(Evaluation.objects.all()[0].id)+'/'
     print('\ntesting '+'\033[1m'+detail+'\033[0m')
@@ -69,3 +72,6 @@ def evaluation_test(uid, upwd):
     else:
         print('Error accessing Evaluation detail.')
         print(res.content)
+        return False
+
+    return True

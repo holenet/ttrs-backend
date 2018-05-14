@@ -29,6 +29,7 @@ def student_test(uid, upwd):
         else:
             print('Error creating Student instance.')
             print(res.text)
+            return False
 
     # Test if view correctly handles invalid data.
     data = {}
@@ -53,3 +54,6 @@ def student_test(uid, upwd):
     else:
         print('Error accessing Student list.')
         print(res.text)
+        return False
+
+    return True

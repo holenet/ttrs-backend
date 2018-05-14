@@ -31,6 +31,11 @@ def crawler_test(uid, upwd):
             print('Successfully stopped Crawler instance.')
         else:
             print('Error stopping Crawler instance.')
+            return False
+
     else:
         print('Error creating Crawler instance.')
+        return False
+
+    return True
 
