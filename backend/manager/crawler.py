@@ -358,12 +358,16 @@ def parse(year, semester, lectures, field_name):
                                                     )
             course_instance.save()
 
-        lecture_instance = Lecture.objects.create(course=course_instance,
-                                                  year=year,
-                                                  semester=semester,
-                                                  number=lecture['number'],
-                                                  instructor=lecture['instructor'],
-                                                  note=lecture['note'])
+        try:
+            lecture_instance = Lecture.objects.create(course=course_instance,
+                                                      year=year,
+                                                      semester=semester,
+                                                      number=lecture['number'],
+                                                      instructor=lecture['instructor'],
+                                                      note=lecture['note'])
+        except Exception as e:
+            print('The lecture instance already exists')
+            continue
 
         # It really is absurd, but there exists lectures without any time slot.
         try:
