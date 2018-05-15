@@ -148,7 +148,8 @@ class MyTimeTableSerializer(TimeTableSerializer):
 
     def validate(self, data):
         if 'title' not in data or not data['title']:
-            data['title'] = '{}년 {}'.format(self.year, self.semester)
+            if not self.instance:
+                data['title'] = '{}년 {}'.format(self.year, self.semester)
         return data
 
 
