@@ -1,7 +1,6 @@
 from django.contrib.auth.models import User, UserManager
 from django.db import models
-
-semester_choices = (('1학기', '1학기'), ('2학기', '2학기'), ('여름학기', '여름학기'), ('겨울학기', '겨울학기'))
+from django.conf import settings
 
 
 class Student(User):
@@ -40,7 +39,7 @@ class Lecture(models.Model):
     time_slots = models.ManyToManyField('ttrs.TimeSlot', related_name='lectures', blank=True)
 
     year = models.PositiveSmallIntegerField()
-    semester = models.CharField(max_length=10, choices=semester_choices)
+    semester = models.CharField(max_length=10, choices=settings.SEMESTER_CHOICES)
     number = models.CharField(max_length=10)
 
     instructor = models.CharField(max_length=20)
@@ -108,7 +107,7 @@ class TimeTable(models.Model):
     memo = models.TextField(blank=True)
 
     year = models.PositiveSmallIntegerField()
-    semester = models.CharField(max_length=10, choices=semester_choices)
+    semester = models.CharField(max_length=10, choices=settings.SEMESTER_CHOICES)
     lectures = models.ManyToManyField('ttrs.Lecture', related_name='lectures', blank=True)
 
     def __init__(self, *args, other=None, **kwargs):

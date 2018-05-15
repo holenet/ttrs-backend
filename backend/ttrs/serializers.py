@@ -194,6 +194,11 @@ class SendTimeTableSerializer(CopyTimeTableSerializer):
         return receiver_name
 
 
+class SemesterSerializer(serializers.Serializer):
+    year = serializers.IntegerField()
+    semester = serializers.CharField()
+
+
 class MajorSerializer(serializers.ModelSerializer):
     college = serializers.SerializerMethodField()
 
