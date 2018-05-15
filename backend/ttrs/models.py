@@ -90,6 +90,9 @@ class Lecture(models.Model):
     def __str__(self):
         return '{}-{} ({}:{})'.format(self.course, self.instructor, self.year, self.semester)
 
+    class Meta:
+        unique_together = ('course', 'year', 'semester', 'number', )
+
 
 class Evaluation(models.Model):
     author = models.ForeignKey('ttrs.Student', related_name='evaluations', on_delete=models.DO_NOTHING)
