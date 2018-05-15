@@ -17,11 +17,11 @@ class TableSerializer(serializers.Serializer):
 
 class CrawlerSerializer(serializers.ModelSerializer):
     status = serializers.ReadOnlyField()
-    semester = serializers.ChoiceField(choices=['1학기', '여름학기', '2학기', '겨울학기'])
 
     class Meta:
         model = Crawler
-        exclude = ('cancel_flag',)
+        fields = '__all__'
+        read_only_fields = ('status', 'cancel_flag')
 
     def validate(self, data):
         request = self.context.get('request')
