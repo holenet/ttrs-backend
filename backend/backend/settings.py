@@ -124,3 +124,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
+# Custom constants and settings
+
+SEMESTER_CHOICES = (('1학기', '1학기'), ('여름학기', '여름학기'), ('2학기', '2학기'), ('겨울학기', '겨울학기'))

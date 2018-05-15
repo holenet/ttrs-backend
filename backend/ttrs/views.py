@@ -1,5 +1,6 @@
 from django.core.exceptions import FieldError, ObjectDoesNotExist
 from django.utils import timezone
+from django.conf import settings
 from rest_framework import generics
 from rest_framework.exceptions import ParseError
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
@@ -10,7 +11,7 @@ from .permissions import IsStudentOrReadOnly, IsOtherStudent, IsStudent, IsTheSt
 from .serializers import StudentSerializer, CollegeSerializer, DepartmentSerializer, MajorSerializer, \
     CourseSerializer, LectureSerializer, EvaluationSerializer, EvaluationDetailSerializer, MyTimeTableSerializer, \
     BookmarkedTimeTableSerializer, ReceivedTimeTableSerializer, SendTimeTableSerializer, CopyTimeTableSerializer, \
-    TimeTableSerializer
+    TimeTableSerializer, SemesterSerializer
 from .models import Student, College, Department, Major, Course, Lecture, Evaluation, MyTimeTable, BookmarkedTimeTable, \
     ReceivedTimeTable, TimeTable
 
@@ -256,6 +257,26 @@ class SendTimeTable(CopyTimeTable):
         new_time_table = ReceivedTimeTable(other=time_table, owner=owner, sender=sender)
         new_time_table.save_m2m()
         return new_time_table.id
+
+
+class SemesterList(generics.ListAPIView):
+    serializer_class = SemesterSerializer
+    permission_classes = (AllowAny,)
+
+    def get_queryset(self):
+        years = {}
+        for lecture in Lecture.objects.all():
+            if lecture.year not in years:
+                years[lecture.year] = [None]*4
+            for i, semester in enumerate(settings.SEMESTER_CHOICES):
+                if semester[0] == lecture.semester:
+                    years[lecture.year][i] = lecture.semester
+        years_semesters = []
+        for year in sorted(years):
+            for semester in years[year]:
+                if semester:
+                    years_semesters.append(dict(year=year, semester=semester))
+        return years_semesters
 
 
 class CollegeList(FilterAPIView, generics.ListAPIView):
