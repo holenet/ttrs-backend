@@ -350,7 +350,7 @@ def parse(year, semester, lectures, field_name):
                                                     name=lecture['name'],
                                                     type=lecture['type'],
                                                     field=field_name,
-                                                    grade=int(lecture['grade'][0]) if len(lecture['grade']) != 0 else 0,
+                                                    grade=int(lecture['grade'][0]) if len(lecture['grade']) else 0,
                                                     credit=int(lecture['credit'].split('-')[0]),
                                                     college=college_instance,
                                                     department=department_instance,
