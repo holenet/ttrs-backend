@@ -270,9 +270,9 @@ class SemesterList(generics.ListAPIView):
                 years[lecture.year] = [None]*4
             for i, semester in enumerate(settings.SEMESTER_CHOICES):
                 if semester[0] == lecture.semester:
-                    years[lecture.year][i] = lecture.semester
+                    years[lecture.year][3-i] = lecture.semester
         years_semesters = []
-        for year in sorted(years):
+        for year in sorted(years, reverse=True):
             for semester in years[year]:
                 if semester:
                     years_semesters.append(dict(year=year, semester=semester))
