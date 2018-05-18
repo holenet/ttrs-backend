@@ -1,12 +1,20 @@
+from django.contrib.auth import login
+from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import FieldError, ObjectDoesNotExist
+from django.core.mail import EmailMessage
+from django.http import HttpResponse
+from django.template.loader import render_to_string
 from django.utils import timezone
 from django.conf import settings
+from django.utils.encoding import force_bytes, force_text
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from rest_framework import generics
 from rest_framework.exceptions import ParseError
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from rest_framework.response import Response
 from rest_framework.status import HTTP_201_CREATED
 
+from .tokens import account_activation_token
 from .permissions import IsStudentOrReadOnly, IsOtherStudent, IsStudent, IsTheStudent
 from .serializers import StudentSerializer, CollegeSerializer, DepartmentSerializer, MajorSerializer, \
     CourseSerializer, LectureSerializer, EvaluationSerializer, EvaluationDetailSerializer, MyTimeTableSerializer, \
@@ -52,6 +60,34 @@ class StudentCreate(generics.CreateAPIView):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
     permission_classes = (AllowAny,)
+
+    def perform_create(self, serializer):
+        student = serializer.save(is_active=False)
+        current_site = get_current_site(self.request)
+        mail_subject = 'Activate your account.'
+        message = render_to_string('acc_active_email.html', {
+            'user': student,
+            'domain': current_site.domain,
+            'uid': urlsafe_base64_encode(force_bytes(student.pk)).decode(),
+            'token': account_activation_token.make_token(student),
+        })
+        to_email = student.email
+        email = EmailMessage(mail_subject, message, to=[to_email])
+        email.send()
+
+
+def activate(request, uidb64, token):
+    try:
+        uid = force_text(urlsafe_base64_decode(uidb64))
+        user = Student.objects.get(pk=uid)
+    except(TypeError, ValueError, OverflowError, Student.DoesNotExist):
+        user = None
+    if user is not None and account_activation_token.check_token(user, token):
+        user.is_active = True
+        user.save()
+        return HttpResponse('Thank you for your email confirmation. Now you can login your account.')
+    else:
+        return HttpResponse('Activation link is invalid!')
 
 
 class StudentDetail(generics.RetrieveUpdateDestroyAPIView):
