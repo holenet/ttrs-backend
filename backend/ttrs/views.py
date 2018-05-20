@@ -62,7 +62,8 @@ class StudentCreate(generics.CreateAPIView):
     permission_classes = (AllowAny,)
 
     def perform_create(self, serializer):
-        student = serializer.save(is_active=False)
+        student = serializer.save()
+        #student = serializer.save(is_active=False) Just commented out for development environment
         current_site = get_current_site(self.request)
         mail_subject = 'Activate your account.'
         message = render_to_string('acc_active_email.html', {
