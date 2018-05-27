@@ -1,6 +1,19 @@
 from django.contrib.auth.models import User, UserManager
 from django.db import models
 from django.conf import settings
+from django.db.models import Lookup, Field
+
+
+@Field.register_lookup
+class Abbreviation(Lookup):
+    lookup_name = 'abbrev'
+
+    def as_sql(self, compiler, connection):
+        lhs, lhs_params = self.process_lhs(compiler, connection)
+        rhs, rhs_params = self.process_rhs(connection, connection)
+        rhs_params[0] = '%'+'%'.join(rhs_params[0])+'%'
+        params = lhs_params + rhs_params
+        return '%s like %s' % (lhs, rhs), params
 
 
 class Student(User):
