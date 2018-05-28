@@ -61,11 +61,17 @@ def recommend(options, student):
         time_table.save()
         time_table.lectures.set(candidate)
         recommends.append(time_table)
-    
+
     return recommends
 
 
 def build_candidates(info):
+    """
+    Build candidate lecture sets from seed sets.
+    Seed sets are courses/lectures that get high scores with regard to given user info.
+    :param info:
+    :return: candidates:
+    """
     num_seeds = 10
     seed_courses = []
     courses = Course.objects.all()
@@ -86,6 +92,12 @@ def build_candidates(info):
 
 
 def get_course_score(course, info):
+    """
+    Given course, calculates score for the course.
+    :param course:
+    :param info:
+    :return: score
+    """
     score = 0
     if course.department == info['student_department']:
         score += 8
@@ -107,6 +119,14 @@ max_lectures = []
 
 
 def branch_and_bound_help(initial_lectures, initial_credit, seed_lectures, info):
+    """
+    This is a wrapper function for branch_and_bound.
+    :param initial_lectures:
+    :param initial_credit:
+    :param seed_lectures:
+    :param info:
+    :return max_lectures:
+    """
     global max_expect
     global max_score
     global max_lectures
@@ -121,14 +141,18 @@ def branch_and_bound_help(initial_lectures, initial_credit, seed_lectures, info)
 
     return max_lectures
 
+
 def branch_and_bound(current_lectures, current_credits, seed_lectures, info):
+    """
+    Recursively searches through possible lecture sets using basic branch and bound Algorithm
+    :param current_lectures:
+    :param current_credits:
+    :param seed_lectures:
+    :param info:
+    """
     global max_expect
     global max_score
     global max_lectures
-
-    # print('\t', 'intermediate step:', current_lectures)
-
-    current_courses = [lecture.course for lecture in current_lectures]
 
     expected_scores = []
     next = []
@@ -165,6 +189,12 @@ def branch_and_bound(current_lectures, current_credits, seed_lectures, info):
 
 
 def upper_bound(lectures, info):
+    """
+    Given a set of lectures, calculates upper bound of its score.
+    :param lectures:
+    :param info:
+    :return:
+    """
     return get_score(lectures, info) + 0
 
 
