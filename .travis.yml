@@ -8,4 +8,4 @@ script:
   - python3 backend/manage.py makemigrations ttrs
   - python3 backend/manage.py makemigrations
   - python3 backend/manage.py migrate
-  - python3 backend/manage.py test ttrs --parallel 4
+  - python3 backend/manage.py test ttrs
