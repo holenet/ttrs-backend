@@ -3,7 +3,7 @@ import json
 from django.contrib.auth.hashers import make_password
 from django.test import TestCase, Client
 
-from .models import College, Student, Department, Major, Course, Lecture, TimeSlot
+from .models import College, Student, Department, Major, Course, Lecture, TimeSlot, Evaluation
 
 
 class MyTestCase(TestCase):
@@ -72,28 +72,70 @@ class MyTestCase(TestCase):
         lecture1.time_slots.add(time_slot2)
         lecture1.time_slots.add(time_slot3)
 
+        data = {
+            'username': 'stu1',
+            'password': make_password('password'),
+            'email': 'stu1@snu.ac.kr',
+            'grade': 3,
+            'college_id': 1,
+            'department_id': 1,
+        }
+        self.student = Student.objects.create(**data)
+        data = {
+            'username': 'stu2',
+            'password': make_password('password'),
+            'email': 'stu2@snu.ac.kr',
+            'grade': 3,
+            'college_id': 1,
+            'department_id': 1,
+        }
+        self.student2 = Student.objects.create(**data)
+        data = {
+            'username': 'stu3',
+            'password': make_password('password'),
+            'email': 'stu3@snu.ac.kr',
+            'grade': 3,
+            'college_id': 1,
+            'department_id': 1,
+        }
+        self.student3 = Student.objects.create(**data)
+
         self.client = Client()
         self.sign_in()
 
     def sign_in(self):
-        if not Student.objects.filter(username='stu1').exists():
-            data = {
-                'username': 'stu1',
-                'password': make_password('password'),
-                'email': 'stu1@snu.ac.kr',
-                'grade': 3,
-                'college_id': 1,
-                'department_id': 1,
-            }
-            Student.objects.get_or_create(**data)
         self.assertTrue(self.client.login(username='stu1', password='password'))
+
+    def get_test(self, url, success=True, status_code=None):
+        response = self.client.get(url)
+        print(response.json())
+        self.assertEqual(response.status_code, status_code if status_code else 200 if success else 400)
+        return response
+
+    def post_test(self, url, data, success=True, status_code=None):
+        response = self.client.post(url, data=data)
+        print(response.json())
+        self.assertEqual(response.status_code, status_code if status_code else 201 if success else 400)
+        return response
+
+    def patch_test(self, url, data, success=True, status_code=None):
+        response = self.client.patch(url, data=json.dumps(data), content_type='application/json')
+        print(response.json())
+        self.assertEqual(response.status_code, status_code if status_code else 200 if success else 400)
+        return response
+
+    def destroy_test(self, url, status_code=None):
+        response = self.client.delete(url)
+        print(response.status_code)
+        self.assertEqual(response.status_code, status_code if status_code else 204)
+        return response
 
 
 class StudentViewTest(MyTestCase):
     url_my = '/ttrs/students/my/'
 
     def test_sign_up(self):
-        response = self.client.post('/ttrs/students/signup/', data={
+        response = self.post_test('/ttrs/students/signup/', {
             'username': 'student',
             'password': 'paawsesfawword',
             'email': 'student@snu.ac.kr',
@@ -101,18 +143,12 @@ class StudentViewTest(MyTestCase):
             'college': 1,
             'department': 1,
         })
-        print(response.json())
-        self.assertEqual(response.status_code, 201)
 
     def test_my_retrieve(self):
-        response = self.client.get(self.url_my)
-        print(response.json())
-        self.assertEqual(response.status_code, 200)
+        response = self.get_test(self.url_my)
 
     def test_my_update_success(self):
-        response = self.client.patch(self.url_my, data=json.dumps({'grade': 1}), content_type='application/json')
-        print(response.json())
-        self.assertEqual(response.status_code, 200)
+        response = self.patch_test(self.url_my, dict(grade=1))
         self.assertEqual(response.json()['grade'], 1)
 
     def test_my_update_fail(self):
@@ -125,11 +161,62 @@ class StudentViewTest(MyTestCase):
             dict(college=1, department=1, major=2),
         ]
         for error_input in errors:
-            response = self.client.patch(self.url_my, data=json.dumps(error_input), content_type='application/json')
-            print(response.json())
+            response = self.patch_test(self.url_my, error_input, False)
             self.assertEqual(response.status_code, 400)
 
     def test_my_delete(self):
-        response = self.client.delete(self.url_my)
-        print(response.status_code)
-        self.assertEqual(response.status_code, 204)
+        response = self.destroy_test(self.url_my)
+
+
+class CourseViewTest(MyTestCase):
+    def test_list(self):
+        response = self.get_test('/ttrs/courses/')
+
+    def test_retrieve(self):
+        response = self.get_test('/ttrs/courses/1/')
+
+
+class LectureViewTest(MyTestCase):
+    def test_list(self):
+        response = self.get_test('/ttrs/lectures/')
+
+    def test_retrieve(self):
+        response = self.get_test('/ttrs/lectures/1/')
+        response = self.get_test('/ttrs/lectures/192318/', status_code=404)
+
+
+class EvaluationViewTesst(MyTestCase):
+    def setUp(self):
+        super().setUp()
+        e = Evaluation.objects.create(author=self.student, lecture_id=2, rate=8, comment='asdf')
+        e.like_it.add(self.student2)
+        e.like_it.add(self.student3)
+        e.save()
+        e = Evaluation.objects.create(author=self.student2, lecture_id=1, rate=3, comment='asdfsdfwef')
+        e.like_it.add(self.student3)
+        e.save()
+        e = Evaluation.objects.create(author=self.student3, lecture_id=3, rate=4, comment='asdsdfsdfwef')
+        e.like_it.add(self.student)
+        e.like_it.add(self.student2)
+        e.save()
+
+    def test_list(self):
+        response = self.get_test('/ttrs/evaluations/')
+        self.assertEqual(len(response.json()), 3)
+
+    def test_retrieve(self):
+        response = self.get_test('/ttrs/evaluations/2/')
+
+    def test_destroy(self):
+        response = self.get_test('/ttrs/evaluations/1/')
+
+    def test_like_it(self):
+        response = self.get_test('/ttrs/evaluations/2/likeit/')
+        self.assertEqual(len(response.json()['like_it']), 2)
+
+    def test_like_it_cancel(self):
+        response = self.destroy_test('/ttrs/evaluations/3/likeit/', status_code=200)
+        self.assertEqual(len(response.json()['like_it']), 1)
+
+    def test_like_it_fail(self):
+        response = self.get_test('/ttrs/evaluations/1/likeit/', status_code=403)

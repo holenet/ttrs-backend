@@ -15,7 +15,7 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_201_CREATED
 
 from .tokens import account_activation_token
-from .permissions import IsStudentOrReadOnly, IsOtherStudent, IsStudent, IsTheStudent
+from .permissions import IsStudentOrReadOnly, IsOtherStudent, IsStudent, IsTheStudent, IsTheStudentOrReadOnly
 from .serializers import StudentSerializer, CollegeSerializer, DepartmentSerializer, MajorSerializer, \
     CourseSerializer, LectureSerializer, EvaluationSerializer, EvaluationDetailSerializer, MyTimeTableSerializer, \
     BookmarkedTimeTableSerializer, ReceivedTimeTableSerializer, SendTimeTableSerializer, CopyTimeTableSerializer, \
@@ -80,7 +80,7 @@ class StudentCreate(generics.CreateAPIView):
 def activate(request, uidb64, token):
     try:
         uid = force_text(urlsafe_base64_decode(uidb64))
-        user = Student.objects.get(pk=uid)
+        user = Student.objects.get_test(pk=uid)
     except(TypeError, ValueError, OverflowError, Student.DoesNotExist):
         user = None
     if user is not None and account_activation_token.check_token(user, token):
@@ -136,7 +136,7 @@ class EvaluationList(FilterAPIView, generics.ListCreateAPIView):
 class EvaluationDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Evaluation.objects.all()
     serializer_class = EvaluationDetailSerializer
-    permission_classes = (IsAuthenticated, IsTheStudent)
+    permission_classes = (IsAuthenticated, IsStudent, IsTheStudentOrReadOnly)
 
 
 class EvaluationLikeIt(generics.RetrieveDestroyAPIView):
