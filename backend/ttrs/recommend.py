@@ -143,11 +143,13 @@ def branch_and_bound(current_lectures, current_credits, seed_lectures, info):
     expected_scores = []
     next = []
     for seed in seed_lectures:
+        # If lecture set is invalid, continue.
         if Lecture.have_same_course(current_lectures + [seed]) or Lecture.do_overlap(current_lectures + [seed]):
             continue
 
         next_credits = current_credits + seed.course.credit
-        if next_credits <= 18:
+        if next_credits <= info['expected_credits']:
+            # In case we can add more lectures
             next_lectures = current_lectures + [seed]
             next.append((next_lectures, next_credits))
             expected_score = upper_bound(next_lectures, info)
@@ -155,6 +157,7 @@ def branch_and_bound(current_lectures, current_credits, seed_lectures, info):
             if max_expect < expected_score:
                 max_expect = expected_score
         else:
+            # In case we cannot add more lectures; that is, we are in the leaf node.
             current_score = get_score(current_lectures, info)
             if max_score < current_score:
                 max_score = current_score
@@ -164,6 +167,7 @@ def branch_and_bound(current_lectures, current_credits, seed_lectures, info):
         index = expected_scores.index(max(expected_scores))
         expected_score = expected_scores[index]
         if max_score < expected_score:
+            # We branch only if expected score is higher than current max score.
             next_lectures = next[index][0]
             next_credits = next[index][1]
             branch_and_bound(next_lectures, next_credits, seed_lectures, info)
@@ -181,6 +185,7 @@ def upper_bound(lectures, info):
     :param info:
     :return:
     """
+    # TODO: Elaborate upper_bound
     return get_score(lectures, info) + 0
 
 
@@ -292,6 +297,7 @@ def get_serial_lectures(lectures):
                     end_time2 = list(map(int, time_slot2.end_time.split(':')))
                     end_time2 = 60*end_time2[0] + end_time2[1]
 
+                    # Check if a pair of lectures are temporally adjacent.
                     if end_time1 < start_time2 < end_time1 + 30:
                         serial_lectures.add((lec1.id, lec2.id))
 
