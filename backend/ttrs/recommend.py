@@ -1,8 +1,9 @@
 import random
+from functools import reduce
 
-from django.db.models import Max, Min
+from django.db.models import Max, Min, Q
 
-from ttrs.models import Lecture, TimeTable
+from ttrs.models import Course, Lecture, TimeTable
 
 # Option fields and their default values
 option_field = {
@@ -19,33 +20,152 @@ option_field = {
 
 def recommend(options, student):
     info = {}
+    # Collect information
     for option in option_field.keys():
         info[option] = options[option] if options.get(option) else option_field[option]
-
-    # Convert values to int
-    for key in info.keys():
-        if key == 'semester':
-            continue
-        info[key] = int(info[key])
+        if option != 'semester':
+            info[option] = int(info[option])
 
     lectures = Lecture.objects.filter(year=info['year'], semester=info['semester'])
     info['min_id'] = lectures.aggregate(min_id=Min('id'))['min_id']
     info['max_id'] = lectures.aggregate(max_id=Max('id'))['max_id']
 
-    print(info)
-    recommends = []
-    num_candidates = 50
-    num_recommends = 3
-    for i in range(num_candidates):
-        print('table', i)
-        time_table = build_timetable(info)
-        recommends.append(time_table)
+    # Collect information from student
+    info['student_grade'] = student.grade
+    info['student_college'] = student.college
+    info['student_department'] = student.department if student.department else None
+    info['student_major'] = student.major if student.major else None
+    info['not_recommends'] = student.not_recommends
 
-    recommends.sort(key=lambda x: get_score(x, info, student), reverse=True)
-    print([get_score(x, info, student) for x in recommends])
-    for time_table in recommends:
-        time_table.delete()
-    return recommends[:num_recommends]
+    print(info)
+    # recommends = []
+    # num_candidates = 50
+    # num_recommends = 3
+    # for i in range(num_candidates):
+    #     #print('table', i)
+    #     time_table = build_timetable(info)
+    #     recommends.append(time_table)
+    #
+    # recommends.sort(key=lambda x: get_score(x, info), reverse=True)
+    # for r in recommends:
+    #     print(get_score(r, info), [l.id for l in r.lectures.all()])
+    # for time_table in recommends:
+    #    time_table.delete()
+    # return recommends[:num_recommends]
+    recommends = []
+    candidates = build_candidates(info)
+    candidates.sort(key=lambda x: get_score(x, info), reverse=True)
+    candidates = candidates[:3]
+    for candidate in candidates:
+        time_table = TimeTable(title='table', year=info['year'], semester=info['semester'])
+        time_table.save()
+        time_table.lectures.set(candidate)
+        recommends.append(time_table)
+    
+    return recommends
+
+
+def build_candidates(info):
+    num_seeds = 10
+    seed_courses = []
+    courses = Course.objects.all()
+    for course in courses:
+        seed_courses.append(course)
+        if len(seed_courses) == num_seeds+1:
+            seed_courses.sort(key=lambda x: get_course_score(x, info), reverse=True)
+            seed_courses = seed_courses[:num_seeds]
+    print(seed_courses)
+
+    candidates = []
+    seed_lectures = Lecture.objects.filter(reduce(lambda x, y: x | y, [Q(course=c) for c in seed_courses]))
+    for lecture in seed_lectures:
+        candidate = branch_and_bound_help([lecture, ], lecture.course.credit, seed_lectures, info)
+        candidates.append(candidate)
+
+    return candidates
+
+
+def get_course_score(course, info):
+    score = 0
+    if course.department == info['student_department']:
+        score += 8
+    if course.grade == info['student_grade']:
+        score += 8
+    if course.type == '전선':
+        score += 4
+    if course.type == '전선':
+        score += 2
+    if course.type == '교양':
+        score += 1
+
+    return score
+
+
+max_expect = 0
+max_score = 0
+max_lectures = []
+
+
+def branch_and_bound_help(initial_lectures, initial_credit, seed_lectures, info):
+    global max_expect
+    global max_score
+    global max_lectures
+
+    max_expect = 0
+    max_score = 0
+    max_lectures = []
+
+    print('!!!!!seed:', initial_lectures)
+    branch_and_bound(initial_lectures, initial_credit, seed_lectures, info)
+    print('!!!!!max_lectures:', max_lectures)
+
+    return max_lectures
+
+def branch_and_bound(current_lectures, current_credits, seed_lectures, info):
+    global max_expect
+    global max_score
+    global max_lectures
+
+    # print('\t', 'intermediate step:', current_lectures)
+
+    current_courses = [lecture.course for lecture in current_lectures]
+
+    expected_scores = []
+    next = []
+    for seed in seed_lectures:
+        if Lecture.have_same_course(current_lectures + [seed]) or Lecture.do_overlap(current_lectures + [seed]):
+            continue
+
+        next_credits = current_credits + seed.course.credit
+        if next_credits <= 18:
+            next_lectures = current_lectures + [seed]
+            next.append((next_lectures, next_credits))
+            expected_score = upper_bound(next_lectures, info)
+            expected_scores.append(expected_score)
+            if max_expect < expected_score:
+                max_expect = expected_score
+        else:
+            current_score = get_score(current_lectures, info)
+            if max_score < current_score:
+                max_score = current_score
+                max_lectures = current_lectures
+
+    while len(expected_scores) != 0:
+        index = expected_scores.index(max(expected_scores))
+        expected_score = expected_scores[index]
+        if max_score < expected_score:
+            next_lectures = next[index][0]
+            next_credits = next[index][1]
+            branch_and_bound(next_lectures, next_credits, seed_lectures, info)
+
+        del expected_scores[index]
+        del next[index]
+
+    return
+
+
+def upper_bound(lectures, info):
+    return get_score(lectures, info) + 0
 
 
 def build_timetable(info):
@@ -61,7 +181,7 @@ def get_lectures(remain_credit, remain_lectures, lectures, info):
     if -3 < remain_credit < 3:
         return lectures
     while True:
-        if random.randint(1, 20)==1:
+        if random.randint(1, 20) == 1:
             return lectures
         lecture = get_random_object(remain_lectures, info['min_id'], info['max_id'])
         lectures.append(lecture)
@@ -81,21 +201,21 @@ def get_random_object(objects, min_id, max_id):
             return instance
 
 
-def get_score(time_table, info, student):
+def get_score(lectures, info):
     total_score = 0
     total_credit = 0
-    for lecture in time_table.lectures.all():
+    for lecture in lectures:
         lecture_score = 0
         course = lecture.course
         total_credit += course.credit
 
         if course.type == '교양':
             lecture_score += 1
-        if course.department and student.department and course.department == student.department:
-            print(course.department, student.department)
+        if course.department and info['student_department'] and course.department == info['student_department']:
+            # print(course.department, student.department)
             lecture_score += 2
-        if course.major and student.major and course.major == student.major:
-            print(course.major, student.major)
+        if course.major and info['student_major'] and course.major == info['student_major']:
+            # print(course.major, student.major)
             lecture_score += 3
             if course.type == '전선':
                 lecture_score += 3
@@ -120,7 +240,7 @@ def get_score(time_table, info, student):
         total_score += lecture_score*course.credit
 
     # Reduce total score if there are serial lectures.
-    serial_lectures = get_serial_lectures(time_table)
+    serial_lectures = get_serial_lectures(lectures)
     for pair in serial_lectures:
         total_score -= info['serial_lectures_weight']
 
@@ -131,15 +251,14 @@ def get_score(time_table, info, student):
     return total_score
 
 
-def get_serial_lectures(time_table):
+def get_serial_lectures(lectures):
     """
     Given time_table, returns a set of pairs of temporally adjacent lectures.
-    :param time_table:
+    :param lectures:
     :return serial_lectures:
     """
     serial_lectures = set()
 
-    lectures = time_table.lectures.all()
     for lec1 in lectures:
         for lec2 in lectures:
             if lec1 == lec2:
@@ -163,5 +282,5 @@ def get_serial_lectures(time_table):
                     if end_time2 < start_time1 < end_time2 + 30:
                         serial_lectures.add((lec2.id, lec1.id))
 
-    print(serial_lectures)
+    # print(serial_lectures)
     return serial_lectures
