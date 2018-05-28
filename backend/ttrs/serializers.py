@@ -53,9 +53,12 @@ class StudentSerializer(serializers.ModelSerializer):
         if 'password' not in data:
             # password not changed
             return data
-        tmp_user = User(username=data['username'], email=data['email'])
         try:
-            validate_password(data['password'], user=tmp_user)
+            if self.instance:
+                validate_password(data['password'], user=self.instance)
+            else:
+                tmp_user = User(username=data['username'], email=data['email'])
+                validate_password(data['password'], user=tmp_user)
         except DjangoValidationError as ve:
             raise ValidationError({'password': ve.messages})
         data['password'] = make_password(data['password'])
