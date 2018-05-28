@@ -3,7 +3,7 @@ import json
 from django.contrib.auth.hashers import make_password
 from django.test import TestCase, Client
 
-from .models import College, Student, Department, Major, Course, Lecture, TimeSlot, Evaluation
+from .models import College, Student, Department, Major, Course, Lecture, TimeSlot, Evaluation, MyTimeTable
 
 
 class MyTestCase(TestCase):
@@ -51,26 +51,34 @@ class MyTestCase(TestCase):
         time_slot1 = TimeSlot.objects.create(day_of_week='월', start_time='12:00', end_time='13:15')
         time_slot2 = TimeSlot.objects.create(day_of_week='수', start_time='12:00', end_time='13:15')
         time_slot3 = TimeSlot.objects.create(day_of_week='금', start_time='16:00', end_time='18:00')
-        lecture1 = Lecture.objects.create(course=course1, year=2018, semester='1학기', number='001', instructor='가나다', note='')
-        lecture1.time_slots.add(time_slot1)
-        lecture1.time_slots.add(time_slot2)
-        lecture1.time_slots.add(time_slot3)
+        lecture = Lecture.objects.create(course=course1, year=2018, semester='1학기', number='001', instructor='가나다', note='')
+        lecture.time_slots.add(time_slot1)
+        lecture.time_slots.add(time_slot2)
+        lecture.time_slots.add(time_slot3)
 
-        time_slot1 = TimeSlot.objects.create(day_of_week='월', start_time='13:00', end_time='14:15')
-        time_slot2 = TimeSlot.objects.create(day_of_week='수', start_time='13:00', end_time='14:15')
+        time_slot1 = TimeSlot.objects.create(day_of_week='월', start_time='14:00', end_time='15:15')
+        time_slot2 = TimeSlot.objects.create(day_of_week='수', start_time='14:00', end_time='15:15')
         time_slot3 = TimeSlot.objects.create(day_of_week='목', start_time='9:00', end_time='10:45')
-        lecture1 = Lecture.objects.create(course=course1, year=2018, semester='1학기', number='002', instructor='ABC', note='RRR')
-        lecture1.time_slots.add(time_slot1)
-        lecture1.time_slots.add(time_slot2)
-        lecture1.time_slots.add(time_slot3)
+        lecture = Lecture.objects.create(course=course1, year=2018, semester='1학기', number='002', instructor='ABC', note='RRR')
+        lecture.time_slots.add(time_slot1)
+        lecture.time_slots.add(time_slot2)
+        lecture.time_slots.add(time_slot3)
 
         time_slot1 = TimeSlot.objects.create(day_of_week='월', start_time='12:00', end_time='13:15')
         time_slot2 = TimeSlot.objects.create(day_of_week='수', start_time='12:00', end_time='13:15')
         time_slot3 = TimeSlot.objects.create(day_of_week='금', start_time='16:00', end_time='18:00')
-        lecture1 = Lecture.objects.create(course=course2, year=2018, semester='1학기', number='001', instructor='가나다', note='')
-        lecture1.time_slots.add(time_slot1)
-        lecture1.time_slots.add(time_slot2)
-        lecture1.time_slots.add(time_slot3)
+        lecture = Lecture.objects.create(course=course3, year=2018, semester='1학기', number='001', instructor='가나다', note='')
+        lecture.time_slots.add(time_slot1)
+        lecture.time_slots.add(time_slot2)
+        lecture.time_slots.add(time_slot3)
+
+        time_slot1 = TimeSlot.objects.create(day_of_week='월', start_time='12:00', end_time='13:15')
+        time_slot2 = TimeSlot.objects.create(day_of_week='수', start_time='12:00', end_time='13:15')
+        time_slot3 = TimeSlot.objects.create(day_of_week='금', start_time='16:00', end_time='18:00')
+        lecture = Lecture.objects.create(course=course2, year=2018, semester='여름학기', number='001', instructor='가나다', note='')
+        lecture.time_slots.add(time_slot1)
+        lecture.time_slots.add(time_slot2)
+        lecture.time_slots.add(time_slot3)
 
         data = {
             'username': 'stu1',
@@ -118,13 +126,19 @@ class MyTestCase(TestCase):
         self.assertEqual(response.status_code, status_code if status_code else 201 if success else 400)
         return response
 
+    def put_test(self, url, data, success=True, status_code=None):
+        response = self.client.put(url, data=json.dumps(data), content_type='application/json')
+        print(response.json())
+        self.assertEqual(response.status_code, status_code if status_code else 200 if success else 400)
+        return response
+
     def patch_test(self, url, data, success=True, status_code=None):
         response = self.client.patch(url, data=json.dumps(data), content_type='application/json')
         print(response.json())
         self.assertEqual(response.status_code, status_code if status_code else 200 if success else 400)
         return response
 
-    def destroy_test(self, url, status_code=None):
+    def delete_test(self, url, status_code=None):
         response = self.client.delete(url)
         print(response.status_code)
         self.assertEqual(response.status_code, status_code if status_code else 204)
@@ -165,7 +179,7 @@ class StudentViewTest(MyTestCase):
             self.assertEqual(response.status_code, 400)
 
     def test_my_delete(self):
-        response = self.destroy_test(self.url_my)
+        response = self.delete_test(self.url_my)
 
 
 class CourseViewTest(MyTestCase):
@@ -185,7 +199,7 @@ class LectureViewTest(MyTestCase):
         response = self.get_test('/ttrs/lectures/192318/', status_code=404)
 
 
-class EvaluationViewTesst(MyTestCase):
+class EvaluationViewTest(MyTestCase):
     def setUp(self):
         super().setUp()
         e = Evaluation.objects.create(author=self.student, lecture_id=2, rate=8, comment='asdf')
@@ -204,8 +218,24 @@ class EvaluationViewTesst(MyTestCase):
         response = self.get_test('/ttrs/evaluations/')
         self.assertEqual(len(response.json()), 3)
 
+    def test_create(self):
+        response = self.post_test('/ttrs/evaluations/', dict(
+            lecture=1,
+            rate=10,
+            comment='asdf',
+        ))
+
     def test_retrieve(self):
         response = self.get_test('/ttrs/evaluations/2/')
+
+    def test_partial_update_fail(self):
+        errors = [
+            dict(rate=-1),
+            dict(rate=11),
+        ]
+        for error in errors:
+            response = self.patch_test('/ttrs/evaluations/1/', error, False)
+        response = self.patch_test('/ttrs/evaluations/2/', {}, status_code=403)
 
     def test_destroy(self):
         response = self.get_test('/ttrs/evaluations/1/')
@@ -215,8 +245,130 @@ class EvaluationViewTesst(MyTestCase):
         self.assertEqual(len(response.json()['like_it']), 2)
 
     def test_like_it_cancel(self):
-        response = self.destroy_test('/ttrs/evaluations/3/likeit/', status_code=200)
+        response = self.delete_test('/ttrs/evaluations/3/likeit/', status_code=200)
         self.assertEqual(len(response.json()['like_it']), 1)
 
     def test_like_it_fail(self):
         response = self.get_test('/ttrs/evaluations/1/likeit/', status_code=403)
+
+
+class SemesterViewTest(MyTestCase):
+    def test_list(self):
+        response = self.get_test('/ttrs/semesters/')
+
+
+class CollegeViewTest(MyTestCase):
+    def test_list(self):
+        response = self.get_test('/ttrs/colleges/')
+
+
+class MyTimeTableViewTest(MyTestCase):
+    def setUp(self):
+        super().setUp()
+
+        response = self.post_test('/ttrs/my-time-tables/', dict(
+            title='table1',
+            lectures=[2, 3],
+        ))
+        response = self.post_test('/ttrs/bookmarked-time-tables/', dict(
+            title='table2',
+            lectures=[4],
+        ))
+
+    def test_create(self):
+        response = self.post_test('/ttrs/my-time-tables/', dict(
+            title='new table',
+            lectures=[2, 3],
+        ))
+        response = self.get_test('/ttrs/my-time-tables/1/', status_code=404)
+
+    def test_create_fail(self):
+        response = self.post_test('/ttrs/my-time-tables/', dict(
+            title='table1',
+            lectures=[1, 2],
+        ), False)
+        response = self.post_test('/ttrs/my-time-tables/', dict(
+            title='table1',
+            lectures=[1, 3],
+        ), False)
+
+    def test_list(self):
+        response = self.get_test('/ttrs/my-time-tables/')
+        self.assertEqual(len(response.json()), 1)
+
+    def test_retrieve(self):
+        response = self.get_test('/ttrs/my-time-tables/1/')
+
+    def test_partial_update(self):
+        response = self.patch_test('/ttrs/my-time-tables/1/', dict(
+            lectures=[1, 3],
+        ), False)
+        response = self.patch_test('/ttrs/my-time-tables/1/', dict(
+            title=None,
+        ), False)
+
+    def test_destroy(self):
+        response = self.delete_test('/ttrs/my-time-tables/1/')
+
+    def test_copy_to_my(self):
+        response = self.post_test('/ttrs/time-tables/copy-to-my/', dict(
+            time_table_id=2
+        ))
+        response = self.get_test('/ttrs/my-time-tables/3/')
+        self.assertEqual(response.json()['title'], 'table2')
+
+
+class BookmarkTimeTableViewTest(MyTestCase):
+    def setUp(self):
+        super().setUp()
+
+        response = self.post_test('/ttrs/bookmarked-time-tables/', dict(
+            title='table1',
+            lectures=[2, 3],
+        ))
+        response = self.post_test('/ttrs/my-time-tables/', dict(
+            title='table2',
+            lectures=[2, 3],
+        ))
+
+    def test_create_fail(self):
+        response = self.post_test('/ttrs/bookmarked-time-tables/', dict(
+            title='table1',
+            lectures=[1, 2],
+        ), False)
+        response = self.post_test('/ttrs/bookmarked-time-tables/', dict(
+            title='table1',
+            lectures=[1, 3],
+        ), False)
+
+    def test_list(self):
+        response = self.get_test('/ttrs/bookmarked-time-tables/')
+        self.assertEqual(len(response.json()), 1)
+
+    def test_retrieve(self):
+        response = self.get_test('/ttrs/bookmarked-time-tables/1/')
+
+    def test_partial_update(self):
+        response = self.patch_test('/ttrs/bookmarked-time-tables/1/', dict(
+            lectures=[1, 3],
+        ), False)
+        response = self.patch_test('/ttrs/bookmarked-time-tables/1/', dict(
+            title=None,
+        ), False)
+
+    def test_destroy(self):
+        response = self.delete_test('/ttrs/bookmarked-time-tables/1/')
+
+    def test_bookmark(self):
+        response = self.post_test('/ttrs/time-tables/bookmark/', dict(
+            time_table_id=2,
+        ))
+        response = self.get_test('/ttrs/bookmarked-time-tables/3/')
+        self.assertEqual(response.json()['title'], 'table2')
+
+
+class ReceivedTimeTableViewTest(MyTestCase):
+    def setUp(self):
+        super().setUp()
+
+

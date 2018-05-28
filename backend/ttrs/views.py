@@ -225,7 +225,7 @@ class ReceivedTimeTableDetail(generics.RetrieveDestroyAPIView):
 
 class ReceiveTimeTable(generics.RetrieveAPIView):
     """
-    Perform receiving the TimeTable.
+    Perform receiving(reading) the TimeTable.
     """
     serializer_class = ReceivedTimeTableSerializer
     permission_classes = (IsAuthenticated, IsStudent)
