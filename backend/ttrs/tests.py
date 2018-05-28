@@ -421,7 +421,7 @@ class ReceivedTimeTableViewTest(BaseTestCase):
     def test_retrieve(self):
         response = self.get_test('/ttrs/received-time-tables/3/')
         self.assertEqual(response.json()['title'], 'table1')
-        self.assertEqual(response.json()['sender'], 2)
+        self.assertEqual(response.json()['sender'], self.student2.username)
 
     def test_destroy(self):
         response = self.delete_test('/ttrs/received-time-tables/3/')
