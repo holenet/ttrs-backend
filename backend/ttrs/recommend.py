@@ -132,6 +132,11 @@ def get_score(time_table, info, student):
 
 
 def get_serial_lectures(time_table):
+    """
+    Given time_table, returns a set of pairs of temporally adjacent lectures.
+    :param time_table:
+    :return serial_lectures:
+    """
     serial_lectures = set()
 
     lectures = time_table.lectures.all()
