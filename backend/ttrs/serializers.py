@@ -160,6 +160,8 @@ class BookmarkedTimeTableSerializer(TimeTableSerializer):
 
 
 class ReceivedTimeTableSerializer(TimeTableSerializer):
+    sender = serializers.StringRelatedField()
+    
     class Meta(TimeTableSerializer.Meta):
         model = ReceivedTimeTable
         read_only_fields = TimeTableSerializer.Meta.read_only_fields+('sender', 'received_at')
