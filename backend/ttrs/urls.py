@@ -25,7 +25,7 @@ urlpatterns = [
     path('bookmarked-time-tables/<int:pk>/', views.BookmarkedTimeTableDetail.as_view()),
     path('received-time-tables/', views.ReceivedTimeTableList.as_view()),
     path('received-time-tables/<int:pk>/', views.ReceivedTimeTableDetail.as_view()),
-    path('received-time-tables/<int:pk>/receive', views.ReceiveTimeTable.as_view()),
+    path('received-time-tables/<int:pk>/receive/', views.ReceiveTimeTable.as_view()),
     path('time-tables/copy-to-my/', views.CopyToMyTimeTable.as_view()),
     path('time-tables/bookmark/', views.BookmarkTimeTable.as_view()),
     path('time-tables/send/', views.SendTimeTable.as_view()),

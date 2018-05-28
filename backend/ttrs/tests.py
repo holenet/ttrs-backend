@@ -6,7 +6,7 @@ from django.test import TestCase, Client
 from .models import College, Student, Department, Major, Course, Lecture, TimeSlot, Evaluation, MyTimeTable
 
 
-class MyTestCase(TestCase):
+class BaseTestCase(TestCase):
     def setUp(self):
         # This comment is for crawling setUp.
         # I leave this implementation for the case that we must use crawled data
@@ -111,8 +111,8 @@ class MyTestCase(TestCase):
         self.client = Client()
         self.sign_in()
 
-    def sign_in(self):
-        self.assertTrue(self.client.login(username='stu1', password='password'))
+    def sign_in(self, username='stu1'):
+        self.assertTrue(self.client.login(username=username, password='password'))
 
     def get_test(self, url, success=True, status_code=None):
         response = self.client.get(url)
@@ -145,7 +145,7 @@ class MyTestCase(TestCase):
         return response
 
 
-class StudentViewTest(MyTestCase):
+class StudentViewTest(BaseTestCase):
     url_my = '/ttrs/students/my/'
 
     def test_sign_up(self):
@@ -182,7 +182,7 @@ class StudentViewTest(MyTestCase):
         response = self.delete_test(self.url_my)
 
 
-class CourseViewTest(MyTestCase):
+class CourseViewTest(BaseTestCase):
     def test_list(self):
         response = self.get_test('/ttrs/courses/')
 
@@ -190,7 +190,7 @@ class CourseViewTest(MyTestCase):
         response = self.get_test('/ttrs/courses/1/')
 
 
-class LectureViewTest(MyTestCase):
+class LectureViewTest(BaseTestCase):
     def test_list(self):
         response = self.get_test('/ttrs/lectures/')
 
@@ -199,7 +199,7 @@ class LectureViewTest(MyTestCase):
         response = self.get_test('/ttrs/lectures/192318/', status_code=404)
 
 
-class EvaluationViewTest(MyTestCase):
+class EvaluationViewTest(BaseTestCase):
     def setUp(self):
         super().setUp()
         e = Evaluation.objects.create(author=self.student, lecture_id=2, rate=8, comment='asdf')
@@ -252,17 +252,17 @@ class EvaluationViewTest(MyTestCase):
         response = self.get_test('/ttrs/evaluations/1/likeit/', status_code=403)
 
 
-class SemesterViewTest(MyTestCase):
+class SemesterViewTest(BaseTestCase):
     def test_list(self):
         response = self.get_test('/ttrs/semesters/')
 
 
-class CollegeViewTest(MyTestCase):
+class CollegeViewTest(BaseTestCase):
     def test_list(self):
         response = self.get_test('/ttrs/colleges/')
 
 
-class MyTimeTableViewTest(MyTestCase):
+class MyTimeTableViewTest(BaseTestCase):
     def setUp(self):
         super().setUp()
 
@@ -281,6 +281,13 @@ class MyTimeTableViewTest(MyTestCase):
             lectures=[2, 3],
         ))
         response = self.get_test('/ttrs/my-time-tables/1/', status_code=404)
+
+    def test_create2(self):
+        response = self.post_test('/ttrs/my-time-tables/', dict(
+            title='new table',
+            lectures=[4]
+        ))
+        response = self.get_test('/ttrs/my-time-tables/1/')
 
     def test_create_fail(self):
         response = self.post_test('/ttrs/my-time-tables/', dict(
@@ -318,7 +325,7 @@ class MyTimeTableViewTest(MyTestCase):
         self.assertEqual(response.json()['title'], 'table2')
 
 
-class BookmarkTimeTableViewTest(MyTestCase):
+class BookmarkTimeTableViewTest(BaseTestCase):
     def setUp(self):
         super().setUp()
 
@@ -367,8 +374,50 @@ class BookmarkTimeTableViewTest(MyTestCase):
         self.assertEqual(response.json()['title'], 'table2')
 
 
-class ReceivedTimeTableViewTest(MyTestCase):
+class ReceivedTimeTableViewTest(BaseTestCase):
     def setUp(self):
         super().setUp()
 
+        self.sign_in('stu2')
+        response = self.post_test('/ttrs/my-time-tables/', dict(
+            title='table1',
+            lectures=[2, 3],
+        ))
+        response = self.post_test('/ttrs/bookmarked-time-tables/', dict(
+            title='table2',
+            lectures=[4],
+        ))
+        response = self.post_test('/ttrs/time-tables/send/', dict(
+            receiver_name='stu1',
+            time_table_id=1,
+        ))
+        self.sign_in()
 
+    def test_list(self):
+        response = self.get_test('/ttrs/received-time-tables/')
+        self.assertEqual(len(response.json()), 1)
+        self.assertIsNone(response.json()[0]['received_at'])
+
+    def test_send_fail(self):
+        response = self.post_test('/ttrs/time-tables/send/', dict(
+            receiver_name='stu10239120391',
+            time_table_id=3,
+        ), False)
+
+    def test_send_fail2(self):
+        response = self.post_test('/ttrs/time-tables/send/', dict(
+            receiver_name='stu2',
+            time_table_id=1,
+        ), False)
+
+    def test_retrieve(self):
+        response = self.get_test('/ttrs/received-time-tables/3/')
+        self.assertEqual(response.json()['title'], 'table1')
+        self.assertEqual(response.json()['sender'], 2)
+
+    def test_destroy(self):
+        response = self.delete_test('/ttrs/received-time-tables/3/')
+
+    def test_receive(self):
+        response = self.get_test('/ttrs/received-time-tables/3/receive/')
+        self.assertIsNotNone(response.json()['received_at'])
