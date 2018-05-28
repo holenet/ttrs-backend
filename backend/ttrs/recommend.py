@@ -37,21 +37,7 @@ def recommend(options, student):
     info['student_major'] = student.major if student.major else None
     info['not_recommends'] = student.not_recommends
 
-    print(info)
-    # recommends = []
-    # num_candidates = 50
-    # num_recommends = 3
-    # for i in range(num_candidates):
-    #     #print('table', i)
-    #     time_table = build_timetable(info)
-    #     recommends.append(time_table)
-    #
-    # recommends.sort(key=lambda x: get_score(x, info), reverse=True)
-    # for r in recommends:
-    #     print(get_score(r, info), [l.id for l in r.lectures.all()])
-    # for time_table in recommends:
-    #    time_table.delete()
-    # return recommends[:num_recommends]
+    # print(info)
     recommends = []
     candidates = build_candidates(info)
     candidates.sort(key=lambda x: get_score(x, info), reverse=True)
@@ -103,7 +89,7 @@ def get_course_score(course, info):
         score += 8
     if course.grade == info['student_grade']:
         score += 8
-    if course.type == '전선':
+    if course.type == '전필':
         score += 4
     if course.type == '전선':
         score += 2
