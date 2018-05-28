@@ -1,4 +1,3 @@
-from django.contrib.auth import login
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import FieldError, ObjectDoesNotExist
 from django.core.mail import EmailMessage
@@ -15,7 +14,7 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_201_CREATED
 
 from .tokens import account_activation_token
-from .permissions import IsStudentOrReadOnly, IsOtherStudent, IsStudent, IsTheStudent, IsTheStudentOrReadOnly
+from .permissions import IsStudentOrReadOnly, IsOtherStudent, IsStudent, IsTheStudentOrReadOnly
 from .serializers import StudentSerializer, CollegeSerializer, DepartmentSerializer, MajorSerializer, \
     CourseSerializer, LectureSerializer, EvaluationSerializer, EvaluationDetailSerializer, MyTimeTableSerializer, \
     BookmarkedTimeTableSerializer, ReceivedTimeTableSerializer, SendTimeTableSerializer, CopyTimeTableSerializer, \

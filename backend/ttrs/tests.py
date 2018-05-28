@@ -198,6 +198,14 @@ class LectureViewTest(BaseTestCase):
         response = self.get_test('/ttrs/lectures/1/')
         response = self.get_test('/ttrs/lectures/192318/', status_code=404)
 
+    def test_search(self):
+        course = Course.objects.create(name='소프트웨어 개발의 원리와 실제', code='M231-313', type='전필', grade=3, credit=3, college_id=1)
+        lecture = Lecture.objects.create(course=course, year=2018, semester='1학기', number='001', instructor='ㅎㅎㅎ')
+        response = self.get_test('/ttrs/lectures/?course__name__abbrev=소개원실')
+        self.assertEqual(len(response.json()), 1)
+        self.assertEqual(response.json()[0]['id'], lecture.id)
+        self.assertEqual(response.json()[0]['course']['id'], course.id)
+
 
 class EvaluationViewTest(BaseTestCase):
     def setUp(self):
