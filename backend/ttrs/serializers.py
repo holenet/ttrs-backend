@@ -14,7 +14,7 @@ class StudentSerializer(serializers.ModelSerializer):
         model = Student
         fields = ('id', 'username', 'password', 'email', 'grade', 'college', 'department', 'major', 'not_recommends',
                   'my_time_tables', 'bookmarked_time_tables', 'received_time_tables')
-        read_only_fields = ('not_recommends', 'my_time_tables', 'bookmarked_time_tables', 'received_time_tables')
+        read_only_fields = ('my_time_tables', 'bookmarked_time_tables', 'received_time_tables')
         extra_kwargs = {
             'email': {'required': True, 'allow_null': False, 'allow_blank': False}
         }
