@@ -165,6 +165,12 @@ class ReceivedTimeTable(TimeTable):
     received_at = models.DateTimeField(null=True, blank=True)
 
 
+class RecommendedTimeTable(TimeTable):
+    owner = models.ForeignKey('ttrs.Student', related_name='recommended_time_tables', on_delete=models.CASCADE)
+    score = models.IntegerField(default=0)
+    recommended_at = models.DateTimeField(auto_now_add=True)
+
+
 class TimeSlot(models.Model):
     day_of_week = models.CharField(max_length=10)
     start_time = models.CharField(max_length=10)

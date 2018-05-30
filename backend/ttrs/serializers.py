@@ -6,7 +6,7 @@ from rest_framework.exceptions import ValidationError
 from django.core.exceptions import ValidationError as DjangoValidationError, ObjectDoesNotExist
 
 from .models import Student, College, Department, Major, Course, Lecture, Evaluation, TimeTable, MyTimeTable, \
-    BookmarkedTimeTable, ReceivedTimeTable, TimeSlot, Classroom
+    BookmarkedTimeTable, ReceivedTimeTable, RecommendedTimeTable, TimeSlot, Classroom
 
 
 class StudentSerializer(serializers.ModelSerializer):
@@ -170,6 +170,12 @@ class ReceivedTimeTableSerializer(TimeTableSerializer):
         read_only_fields = TimeTableSerializer.Meta.read_only_fields+('sender', 'received_at')
 
 
+class RecommendedTimeTableSerializer(TimeTableSerializer):
+    class Meta(TimeTableSerializer.Meta):
+        model = RecommendedTimeTable
+        read_only_fields = TimeTableSerializer.Meta.read_only_fields+('score', 'recommended_at')
+
+
 class CopyTimeTableSerializer(serializers.Serializer):
     time_table_id = serializers.IntegerField()
 
@@ -182,7 +188,7 @@ class CopyTimeTableSerializer(serializers.Serializer):
             TimeTable.objects.get(pk=time_table_id)
         except ObjectDoesNotExist:
             raise ValidationError("There is no time table with this id.")
-        table_models = (MyTimeTable, BookmarkedTimeTable, ReceivedTimeTable)
+        table_models = (MyTimeTable, BookmarkedTimeTable, ReceivedTimeTable, RecommendedTimeTable)
         if not any([model.objects.filter(owner=self.owner, pk=time_table_id) for model in table_models]):
             raise ValidationError("You can send only your tables.")
         return time_table_id
