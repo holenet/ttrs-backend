@@ -19,24 +19,7 @@ option_field = {
 
 
 def recommend(options, student):
-    info = {}
-    # Collect information
-    for option in option_field.keys():
-        info[option] = options[option] if options.get(option) else option_field[option]
-        if option != 'semester':
-            info[option] = int(info[option])
-
-    lectures = Lecture.objects.filter(year=info['year'], semester=info['semester'])
-    info['min_id'] = lectures.aggregate(min_id=Min('id'))['min_id']
-    info['max_id'] = lectures.aggregate(max_id=Max('id'))['max_id']
-
-    # Collect information from student
-    info['student_grade'] = student.grade
-    info['student_college'] = student.college
-    info['student_department'] = student.department if student.department else None
-    info['student_major'] = student.major if student.major else None
-    info['not_recommends'] = student.not_recommends
-
+    info = init(options, student)
     # print(info)
     recommends = []
     candidates = build_candidates(info)
@@ -49,6 +32,28 @@ def recommend(options, student):
         recommends.append(time_table)
 
     return recommends
+
+
+def init(options, student):
+    info = {}
+    # Collect information
+    for option in option_field.keys():
+        info[option] = options[option] if options.get(option) else option_field[option]
+        if option != 'semester':
+            info[option] = int(info[option])
+
+    # lectures = Lecture.objects.filter(year=info['year'], semester=info['semester'])
+    # info['min_id'] = lectures.aggregate(min_id=Min('id'))['min_id']
+    # info['max_id'] = lectures.aggregate(max_id=Max('id'))['max_id']
+
+    # Collect information from student
+    info['student_grade'] = student.grade
+    info['student_college'] = student.college
+    info['student_department'] = student.department if student.department else None
+    info['student_major'] = student.major if student.major else None
+    info['not_recommends'] = student.not_recommends
+
+    return info
 
 
 def build_candidates(info):
@@ -69,7 +74,7 @@ def build_candidates(info):
     print(seed_courses)
 
     candidates = []
-    seed_lectures = Lecture.objects.filter(reduce(lambda x, y: x | y, [Q(course=c) for c in seed_courses]))
+    seed_lectures = Lecture.objects.filter(reduce(lambda x, y: x | y, [Q(course=c) for c in seed_courses])).filter(year=info['year'], semester=info['semester'])
     for lecture in seed_lectures:
         candidate = branch_and_bound_help([lecture, ], lecture.course.credit, seed_lectures, info)
         candidates.append(candidate)
@@ -80,21 +85,20 @@ def build_candidates(info):
 def get_course_score(course, info):
     """
     Given course, calculates score for the course.
-    :param course:
-    :param info:
-    :return: score
     """
     score = 0
-    if course.department == info['student_department']:
+    score -= abs(course.grade - info['student_grade'])
+
+    if course.department == info['student_department'] and course.type == '전필':
+        print('department type', course.id, course.department, info['student_department'], course.type)
         score += 8
-    if course.grade == info['student_grade']:
+    if course.department == info['student_department'] and course.type == '전선':
         score += 8
-    if course.type == '전필':
-        score += 4
-    if course.type == '전선':
-        score += 2
     if course.type == '교양':
         score += 1
+
+    if course in info['not_recommends'].all():
+        score = 0
 
     return score
 
@@ -148,7 +152,7 @@ def branch_and_bound(current_lectures, current_credits, seed_lectures, info):
             continue
 
         next_credits = current_credits + seed.course.credit
-        if next_credits <= info['expected_credits']:
+        if next_credits <= info['expected_credit']:
             # In case we can add more lectures
             next_lectures = current_lectures + [seed]
             next.append((next_lectures, next_credits))
@@ -275,8 +279,8 @@ def get_score(lectures, info):
 def get_serial_lectures(lectures):
     """
     Given time_table, returns a set of pairs of temporally adjacent lectures.
-    :param lectures:
-    :return serial_lectures:
+    :param lectures: A set of lectures
+    :return serial_lectures: A set of pairs of lectures those are temporally adjacent.
     """
     serial_lectures = set()
 
