@@ -26,8 +26,8 @@ def recommend(options, student):
         recommends.append(time_table)
     recommends.sort(key=lambda x: get_score(x, info, student), reverse=True)
     print([get_score(x, info, student) for x in recommends])
-    for time_table in recommends:
-        time_table.delete()
+    # for time_table in recommends:
+    #     time_table.delete()
     return recommends[:num_recommends]
 
 
