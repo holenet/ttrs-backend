@@ -61,8 +61,6 @@ def build_candidates(info):
     """
     Build candidate lecture sets from seed sets.
     Seed sets are courses/lectures that get high scores with regard to given user info.
-    :param info:
-    :return: candidates:
     """
     seed_courses = get_seed_courses(10, info)
     # print(seed_courses)
