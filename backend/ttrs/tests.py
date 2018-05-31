@@ -429,3 +429,13 @@ class ReceivedTimeTableViewTest(BaseTestCase):
     def test_receive(self):
         response = self.get_test('/ttrs/received-time-tables/3/receive/')
         self.assertIsNotNone(response.json()['received_at'])
+
+
+class RecommendViewTest(BaseTestCase):
+    def setUp(self):
+        super().setUp()
+        # self.sign_in()
+
+    def test_retrieve(self):
+        response = self.get_test('/ttrs/recommends/')
+        response = self.get_test('/ttrs/recommends/?year=2018&semester=1학기')
