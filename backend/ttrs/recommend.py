@@ -25,19 +25,22 @@ def recommend(options, student):
 
     candidates = build_candidates(info)
     candidates.sort(key=lambda x: get_score(x, info), reverse=True)
+
+    index = 0
     candidates = candidates[:3]
     for candidate in candidates:
-        time_table = RecommendedTimeTable(owner=student, title='table', year=info['year'], semester=info['semester'])
+        time_table = RecommendedTimeTable(owner=student, title='table {}'.format(index), year=info['year'], semester=info['semester'])
         time_table.save()
         time_table.lectures.set(candidate)
         recommends.append(time_table)
+        index += 1
 
     return recommends
 
 
 def init(options, student):
     RecommendedTimeTable.objects.filter(owner=student).delete()
-    
+
     info = {}
     # Collect information
     for option in option_field.keys():
