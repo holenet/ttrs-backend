@@ -36,6 +36,8 @@ def recommend(options, student):
 
 
 def init(options, student):
+    RecommendedTimeTable.objects.filter(owner=student).delete()
+    
     info = {}
     # Collect information
     for option in option_field.keys():
@@ -63,7 +65,7 @@ def build_candidates(info):
     Seed sets are courses/lectures that get high scores with regard to given user info.
     """
     seed_courses = get_seed_courses(10, info)
-    print(seed_courses)
+    # print(seed_courses)
 
     candidates = []
     seed_lectures = Lecture.objects.filter(reduce(lambda x, y: x | y, [Q(course=c) for c in seed_courses]))
