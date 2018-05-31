@@ -1,4 +1,4 @@
-import random
+import random, heapq
 from functools import reduce
 
 from django.db.models import Max, Min, Q
@@ -63,7 +63,7 @@ def build_candidates(info):
     Seed sets are courses/lectures that get high scores with regard to given user info.
     """
     seed_courses = get_seed_courses(10, info)
-    # print(seed_courses)
+    print(seed_courses)
 
     candidates = []
     seed_lectures = Lecture.objects.filter(reduce(lambda x, y: x | y, [Q(course=c) for c in seed_courses]))
@@ -76,14 +76,18 @@ def build_candidates(info):
 
 
 def get_seed_courses(num_seeds, info):
-    seed_courses = []
+    course_heap = []
 
     courses = Course.objects.all()
     for course in courses:
-        seed_courses.append(course)
-        if len(seed_courses) == num_seeds + 1:
-            seed_courses.sort(key=lambda x: get_course_score(x, info), reverse=True)
-            seed_courses = seed_courses[:num_seeds]
+        elt = CourseElt(course=course, score=get_course_score(course, info))
+        heapq.heappush(course_heap, elt)
+        if num_seeds < len(course_heap):
+            heapq.heappop(course_heap)
+
+    seed_courses = []
+    for elt in course_heap:
+        seed_courses.append(elt.course)
 
     return seed_courses
 
@@ -96,7 +100,6 @@ def get_course_score(course, info):
     score -= abs(course.grade - info['student_grade'])
 
     if course.department == info['student_department'] and course.type == '전필':
-        print('department type', course.id, course.department, info['student_department'], course.type)
         score += 8
     if course.department == info['student_department'] and course.type == '전선':
         score += 8
@@ -126,9 +129,9 @@ def branch_and_bound_help(initial_lectures, initial_credit, seed_lectures, info)
     max_score = 0
     max_lectures = []
 
-    print('!!!!!seed:', initial_lectures)
+    # print('!!!!!seed:', initial_lectures)
     branch_and_bound(initial_lectures, initial_credit, seed_lectures, info)
-    print('!!!!!max_lectures:', max_lectures)
+    # print('!!!!!max_lectures:', max_lectures)
 
     return max_lectures
 
@@ -304,3 +307,12 @@ def get_serial_lectures(lectures):
 
     # print(serial_lectures)
     return serial_lectures
+
+
+class CourseElt(object):
+    def __init__(self, course, score):
+        self.course = course
+        self.score = score
+
+    def __lt__(self, other):
+        return self.score < other.score
