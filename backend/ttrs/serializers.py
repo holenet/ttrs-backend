@@ -119,6 +119,20 @@ class EvaluationSerializer(serializers.ModelSerializer):
             raise ValidationError("The rate should be an integer between 1 and 10 inclusive.")
         return rate
 
+    def validate_lecture(self, lecture):
+        # ignore PUT, PATCH
+        if self.instance is not None:
+            return lecture
+
+        # Only one evaluation per lecture
+        username = self.context['request'].user.username
+        student = Student.objects.get_by_natural_key(username)
+        evaluation = Evaluation.objects.filter(author=student, lecture=lecture).first()
+        if evaluation is not None:
+            raise ValidationError('You can make at most one evaluation per lecture. '
+                                  'Existing evaluation id: {}'.format(evaluation.id))
+        return lecture
+
 
 class EvaluationDetailSerializer(EvaluationSerializer):
     lecture = serializers.ReadOnlyField(source='lecture.id')
