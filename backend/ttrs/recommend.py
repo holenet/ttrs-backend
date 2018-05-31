@@ -2,8 +2,8 @@ import random
 from functools import reduce
 
 from django.db.models import Max, Min, Q
+from ttrs.models import Course, Lecture, RecommendedTimeTable
 
-from ttrs.models import Course, Lecture, TimeTable
 
 # Option fields and their default values
 option_field = {
@@ -22,11 +22,12 @@ def recommend(options, student):
     info = init(options, student)
     # print(info)
     recommends = []
+
     candidates = build_candidates(info)
     candidates.sort(key=lambda x: get_score(x, info), reverse=True)
     candidates = candidates[:3]
     for candidate in candidates:
-        time_table = TimeTable(title='table', year=info['year'], semester=info['semester'])
+        time_table = RecommendedTimeTable(owner=student, title='table', year=info['year'], semester=info['semester'])
         time_table.save()
         time_table.lectures.set(candidate)
         recommends.append(time_table)
@@ -193,9 +194,9 @@ def upper_bound(lectures, info):
     return get_score(lectures, info) + 0
 
 
-def build_timetable(info):
+def build_timetable(info, student):
     lectures = get_lectures(info['expected_credit'], Lecture.objects.filter(year=info['year'], semester=info['semester']), [], info)
-    time_table = TimeTable(title='table', year=info['year'], semester=info['semester'])
+    time_table = RecommendedTimeTable(owner=student, title='table', year=info['year'], semester=info['semester'])
     time_table.save()
     for lecture in lectures:
         time_table.lectures.add(lecture)
