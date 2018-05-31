@@ -2,7 +2,7 @@ import random
 
 from django.db.models import Max, Min
 
-from ttrs.models import Lecture, TimeTable
+from ttrs.models import Lecture, RecommendedTimeTable
 
 
 def recommend(options, student):
@@ -22,7 +22,7 @@ def recommend(options, student):
     num_recommends = 3
     for i in range(num_candidates):
         print('table', i)
-        time_table = build_timetable(info)
+        time_table = build_timetable(info, student)
         recommends.append(time_table)
     recommends.sort(key=lambda x: get_score(x, info, student), reverse=True)
     print([get_score(x, info, student) for x in recommends])
@@ -31,9 +31,9 @@ def recommend(options, student):
     return recommends[:num_recommends]
 
 
-def build_timetable(info):
+def build_timetable(info, student):
     lectures = get_lectures(info['expected_credit'], Lecture.objects.filter(year=info['year'], semester=info['semester']), [], info)
-    time_table = TimeTable(title='table', year=info['year'], semester=info['semester'])
+    time_table = RecommendedTimeTable(owner=student, title='table', year=info['year'], semester=info['semester'])
     time_table.save()
     for lecture in lectures:
         time_table.lectures.add(lecture)

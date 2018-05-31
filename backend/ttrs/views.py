@@ -18,7 +18,7 @@ from .permissions import IsStudentOrReadOnly, IsOtherStudent, IsStudent, IsTheSt
 from .serializers import StudentSerializer, CollegeSerializer, DepartmentSerializer, MajorSerializer, \
     CourseSerializer, LectureSerializer, EvaluationSerializer, EvaluationDetailSerializer, MyTimeTableSerializer, \
     BookmarkedTimeTableSerializer, ReceivedTimeTableSerializer, SendTimeTableSerializer, CopyTimeTableSerializer, \
-    TimeTableSerializer, SemesterSerializer
+    RecommendedTimeTableSerializer, TimeTableSerializer, SemesterSerializer
 from .models import Student, College, Department, Major, Course, Lecture, Evaluation, MyTimeTable, BookmarkedTimeTable, \
     ReceivedTimeTable, TimeTable
 
@@ -334,7 +334,7 @@ class MajorList(FilterAPIView, generics.ListAPIView):
 
 
 class RecommendView(generics.ListAPIView):
-    serializer_class = TimeTableSerializer
+    serializer_class = RecommendedTimeTableSerializer
     permission_classes = (IsAuthenticated, IsStudent)
 
     def get_queryset(self):
