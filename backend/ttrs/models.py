@@ -117,6 +117,9 @@ class Evaluation(models.Model):
     def __str__(self):
         return '{}-{}'.format(self.lecture, self.author)
 
+    class Meta:
+        unique_together = ('author', 'lecture')
+
 
 class TimeTable(models.Model):
     title = models.CharField(max_length=100, default='time table', blank=True)
