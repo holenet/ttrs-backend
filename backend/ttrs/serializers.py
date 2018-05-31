@@ -124,7 +124,7 @@ class EvaluationSerializer(serializers.ModelSerializer):
         if self.instance is not None:
             return lecture
 
-        # Should not be
+        # Only one evaluation per lecture
         username = self.context['request'].user.username
         student = Student.objects.get_by_natural_key(username)
         evaluation = Evaluation.objects.filter(author=student, lecture=lecture).first()
