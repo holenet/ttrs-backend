@@ -90,11 +90,7 @@ def get_seed_courses(num_seeds, info):
         if num_seeds < len(course_heap):
             heapq.heappop(course_heap)
 
-    seed_courses = []
-    for elt in course_heap:
-        seed_courses.append(elt.course)
-
-    return seed_courses
+    return [elt.course for elt in course_heap]
 
 
 def get_course_score(course, info):
@@ -107,9 +103,9 @@ def get_course_score(course, info):
     if course.department == info['student_department'] and course.type == '전필':
         score += 8
     if course.department == info['student_department'] and course.type == '전선':
-        score += 8
+        score += 4
     if course.type == '교양':
-        score += 1
+        score += 2
 
     if course in info['not_recommends'].all():
         score = 0
