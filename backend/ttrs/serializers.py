@@ -107,6 +107,8 @@ class LectureSerializer(serializers.ModelSerializer):
 
 
 class EvaluationSerializer(serializers.ModelSerializer):
+    author = serializers.StringRelatedField()
+    
     class Meta:
         model = Evaluation
         fields = '__all__'
