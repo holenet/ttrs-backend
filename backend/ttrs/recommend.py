@@ -64,23 +64,30 @@ def build_candidates(info):
     :param info:
     :return: candidates:
     """
-    num_seeds = 10
-    seed_courses = []
-    courses = Course.objects.all()
-    for course in courses:
-        seed_courses.append(course)
-        if len(seed_courses) == num_seeds+1:
-            seed_courses.sort(key=lambda x: get_course_score(x, info), reverse=True)
-            seed_courses = seed_courses[:num_seeds]
-    print(seed_courses)
+    seed_courses = get_seed_courses(10, info)
+    # print(seed_courses)
 
     candidates = []
-    seed_lectures = Lecture.objects.filter(reduce(lambda x, y: x | y, [Q(course=c) for c in seed_courses])).filter(year=info['year'], semester=info['semester'])
+    seed_lectures = Lecture.objects.filter(reduce(lambda x, y: x | y, [Q(course=c) for c in seed_courses]))
+    seed_lectures = seed_lectures.filter(year=info['year'], semester=info['semester'])
     for lecture in seed_lectures:
         candidate = branch_and_bound_help([lecture, ], lecture.course.credit, seed_lectures, info)
         candidates.append(candidate)
 
     return candidates
+
+
+def get_seed_courses(num_seeds, info):
+    seed_courses = []
+
+    courses = Course.objects.all()
+    for course in courses:
+        seed_courses.append(course)
+        if len(seed_courses) == num_seeds + 1:
+            seed_courses.sort(key=lambda x: get_course_score(x, info), reverse=True)
+            seed_courses = seed_courses[:num_seeds]
+
+    return seed_courses
 
 
 def get_course_score(course, info):
@@ -112,11 +119,6 @@ max_lectures = []
 def branch_and_bound_help(initial_lectures, initial_credit, seed_lectures, info):
     """
     This is a wrapper function for branch_and_bound.
-    :param initial_lectures:
-    :param initial_credit:
-    :param seed_lectures:
-    :param info:
-    :return max_lectures:
     """
     global max_expect
     global max_score
@@ -136,10 +138,6 @@ def branch_and_bound_help(initial_lectures, initial_credit, seed_lectures, info)
 def branch_and_bound(current_lectures, current_credits, seed_lectures, info):
     """
     Recursively searches through possible lecture sets using basic branch and bound Algorithm
-    :param current_lectures:
-    :param current_credits:
-    :param seed_lectures:
-    :param info:
     """
     global max_expect
     global max_score
@@ -186,9 +184,6 @@ def branch_and_bound(current_lectures, current_credits, seed_lectures, info):
 def upper_bound(lectures, info):
     """
     Given a set of lectures, calculates upper bound of its score.
-    :param lectures:
-    :param info:
-    :return:
     """
     # TODO: Elaborate upper_bound
     return get_score(lectures, info) + 0
