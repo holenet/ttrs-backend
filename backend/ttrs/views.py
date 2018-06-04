@@ -8,7 +8,7 @@ from django.conf import settings
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from rest_framework import generics
-from rest_framework.exceptions import ParseError
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from rest_framework.response import Response
 from rest_framework.status import HTTP_201_CREATED
@@ -18,7 +18,7 @@ from .permissions import IsStudentOrReadOnly, IsOtherStudent, IsStudent, IsTheSt
 from .serializers import StudentSerializer, CollegeSerializer, DepartmentSerializer, MajorSerializer, \
     CourseSerializer, LectureSerializer, EvaluationSerializer, EvaluationDetailSerializer, MyTimeTableSerializer, \
     BookmarkedTimeTableSerializer, ReceivedTimeTableSerializer, SendTimeTableSerializer, CopyTimeTableSerializer, \
-    RecommendedTimeTableSerializer, TimeTableSerializer, SemesterSerializer
+    RecommendedTimeTableSerializer, SemesterSerializer
 from .models import Student, College, Department, Major, Course, Lecture, Evaluation, MyTimeTable, BookmarkedTimeTable, \
     ReceivedTimeTable, TimeTable
 
@@ -36,17 +36,14 @@ class FilterAPIView(generics.GenericAPIView):
     """
 
     def filter_queryset(self, queryset):
-        errors = {}
+        options = {}
         for key, value in self.request.query_params.items():
             try:
                 queryset.filter(**{key: value})
-            except (FieldError, ValueError) as e:
-                error_key = '{}={}'.format(key, value)
-                error_value = list(e.args)
-                errors[error_key] = error_value
-        if errors:
-            raise ParseError(errors)
-        return queryset.filter(**self.request.query_params.dict())
+                options.update({key: value})
+            except (FieldError, ValueError):
+                pass
+        return queryset.filter(**options)
 
 
 class StudentList(generics.ListAPIView):
@@ -103,6 +100,7 @@ class CourseList(FilterAPIView, generics.ListAPIView):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
     permission_classes = (IsAuthenticated,)
+    pagination_class = LimitOffsetPagination
 
 
 class CourseDetail(generics.RetrieveAPIView):
@@ -115,6 +113,7 @@ class LectureList(FilterAPIView, generics.ListAPIView):
     queryset = Lecture.objects.all()
     serializer_class = LectureSerializer
     permission_classes = (IsAuthenticated,)
+    pagination_class = LimitOffsetPagination
 
 
 class LectureDetail(generics.RetrieveAPIView):
