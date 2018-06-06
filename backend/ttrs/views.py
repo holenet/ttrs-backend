@@ -25,24 +25,35 @@ from .models import Student, College, Department, Major, Course, Lecture, Evalua
 from .recommend import recommend
 
 
-class FilterAPIView(generics.GenericAPIView):
+class FilterOrderAPIView(generics.GenericAPIView):
     """
-    Custom supporting APIView for filtering queryset based on query_params.
+    Custom supporting APIView for filtering and ordering queryset based on query_params.
 
-    By extending this class, the APIView will automatically filter queryset if the request
-    has query_params.
-    Keys of the query_params MUST be a valid key of the function 'QuerySet.filter', or
-    raises ParseError with status 400.
+    By extending this class, the APIView will automatically filter and order queryset
+    if the request has query_params.
+    Keys of the query_params that is not valid for the function 'QuerySet.filter', except 'order_by', would be ignored.
+    The value of the key 'order_by' that is not valid for the function 'QuerySet.order_by' would be ignored.
     """
 
     def filter_queryset(self, queryset):
+        ordering = None
         options = {}
         for key, value in self.request.query_params.items():
+            if key == 'order_by' and value:
+                try:
+                    queryset.filter(**{value[value[0]=='-':]+'__isnull': 'True'})
+                    ordering = value
+                except (FieldError, ValueError) as e:
+                    print(e)
+                    pass
+                continue
             try:
                 queryset.filter(**{key: value})
                 options.update({key: value})
             except (FieldError, ValueError):
                 pass
+        if ordering:
+            return queryset.filter(**options).order_by(ordering)
         return queryset.filter(**options)
 
 
@@ -96,7 +107,7 @@ class StudentDetail(generics.RetrieveUpdateDestroyAPIView):
         return Student.objects.get_by_natural_key(self.request.user.username)
 
 
-class CourseList(FilterAPIView, generics.ListAPIView):
+class CourseList(FilterOrderAPIView, generics.ListAPIView):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
     permission_classes = (IsAuthenticated,)
@@ -109,7 +120,7 @@ class CourseDetail(generics.RetrieveAPIView):
     permission_classes = (IsAuthenticated,)
 
 
-class LectureList(FilterAPIView, generics.ListAPIView):
+class LectureList(FilterOrderAPIView, generics.ListAPIView):
     queryset = Lecture.objects.all()
     serializer_class = LectureSerializer
     permission_classes = (IsAuthenticated,)
@@ -122,7 +133,7 @@ class LectureDetail(generics.RetrieveAPIView):
     permission_classes = (IsAuthenticated,)
 
 
-class EvaluationList(FilterAPIView, generics.ListCreateAPIView):
+class EvaluationList(FilterOrderAPIView, generics.ListCreateAPIView):
     queryset = Evaluation.objects.all()
     serializer_class = EvaluationSerializer
     permission_classes = (IsAuthenticated, IsStudentOrReadOnly)
@@ -157,7 +168,7 @@ class EvaluationLikeIt(generics.RetrieveDestroyAPIView):
         return Response(serializer.data)
 
 
-class MyTimeTableList(FilterAPIView, generics.ListCreateAPIView):
+class MyTimeTableList(FilterOrderAPIView, generics.ListCreateAPIView):
     """
     If the student have a TimeTable with given year and semester already,
     the existing TimeTable will be overwritten by new TimeTable.
@@ -186,7 +197,7 @@ class MyTimeTableDetail(generics.RetrieveUpdateDestroyAPIView):
         return MyTimeTable.objects.filter(owner__username=self.request.user.username)
 
 
-class BookmarkedTimeTableList(FilterAPIView, generics.ListCreateAPIView):
+class BookmarkedTimeTableList(FilterOrderAPIView, generics.ListCreateAPIView):
     serializer_class = BookmarkedTimeTableSerializer
     permission_classes = (IsAuthenticated, IsStudent)
 
@@ -205,7 +216,7 @@ class BookmarkedTimeTableDetail(generics.RetrieveUpdateDestroyAPIView):
         return BookmarkedTimeTable.objects.filter(owner__username=self.request.user.username)
 
 
-class ReceivedTimeTableList(FilterAPIView, generics.ListAPIView):
+class ReceivedTimeTableList(FilterOrderAPIView, generics.ListAPIView):
     serializer_class = ReceivedTimeTableSerializer
     permission_classes = (IsAuthenticated, IsStudent)
 
@@ -314,19 +325,19 @@ class SemesterList(generics.ListAPIView):
         return years_semesters
 
 
-class CollegeList(FilterAPIView, generics.ListAPIView):
+class CollegeList(FilterOrderAPIView, generics.ListAPIView):
     queryset = College.objects.all()
     serializer_class = CollegeSerializer
     permission_classes = (AllowAny,)
 
 
-class DepartmentList(FilterAPIView, generics.ListAPIView):
+class DepartmentList(FilterOrderAPIView, generics.ListAPIView):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
     permission_classes = (AllowAny,)
 
 
-class MajorList(FilterAPIView, generics.ListAPIView):
+class MajorList(FilterOrderAPIView, generics.ListAPIView):
     queryset = Major.objects.all()
     serializer_class = MajorSerializer
     permission_classes = (AllowAny,)
