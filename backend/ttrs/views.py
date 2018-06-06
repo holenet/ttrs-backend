@@ -344,10 +344,10 @@ class StaticInformation(generics.RetrieveAPIView):
         params = self.request.query_params
         if 'year' in params and 'semester' in params:
             year, semester = params.get('year'), params.get('semester')
+            if not year.isnumeric():
+                return Response({'detail': "Invalid year param, expected a number"})
         else:
             year, semester = semesters[0]['year'], semesters[0]['semester']
-        if not year.isnumeric():
-            return Response({'detail': "Invalid year param, expected a number"})
         year = int(year)
         types = set()
         fields = {}
