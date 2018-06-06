@@ -36,13 +36,24 @@ class FilterAPIView(generics.GenericAPIView):
     """
 
     def filter_queryset(self, queryset):
+        ordering = None
         options = {}
         for key, value in self.request.query_params.items():
+            if key == 'order_by' and value:
+                try:
+                    queryset.filter(**{value[value[0]=='-':]+'__isnull': 'True'})
+                    ordering = value
+                except (FieldError, ValueError) as e:
+                    print(e)
+                    pass
+                continue
             try:
                 queryset.filter(**{key: value})
                 options.update({key: value})
             except (FieldError, ValueError):
                 pass
+        if ordering:
+            return queryset.filter(**options).order_by(ordering)
         return queryset.filter(**options)
 
 
