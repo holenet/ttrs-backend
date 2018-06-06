@@ -227,14 +227,9 @@ class SemesterSerializer(serializers.Serializer):
 
 
 class MajorSerializer(serializers.ModelSerializer):
-    college = serializers.SerializerMethodField()
-
     class Meta:
         model = Major
         fields = '__all__'
-
-    def get_college(self, major):
-        return major.department.college_id
 
 
 class DepartmentSerializer(serializers.ModelSerializer):
