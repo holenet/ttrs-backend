@@ -34,6 +34,7 @@ urlpatterns = [
     path('colleges/', views.CollegeList.as_view()),
     path('departments/', views.DepartmentList.as_view()),
     path('majors/', views.MajorList.as_view()),
+    path('static-information/', views.StaticInformation.as_view()),
 
     path('recommends/', views.RecommendView.as_view()),
 ]

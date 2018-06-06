@@ -332,6 +332,42 @@ class MajorList(FilterAPIView, generics.ListAPIView):
     permission_classes = (AllowAny,)
 
 
+class StaticInformation(generics.RetrieveAPIView):
+    def get_queryset(self):
+        return []
+
+    def retrieve(self, request, *args, **kwargs):
+        colleges = CollegeSerializer(College.objects.all(), many=True).data
+        semesters = SemesterList.get_queryset(SemesterList())
+        if not semesters:
+            return Response({'detail': "No information. Please run a crawling task."})
+        params = self.request.query_params
+        if 'year' in params and 'semester' in params:
+            year, semester = params.get('year'), params.get('semester')
+            if not year.isnumeric():
+                return Response({'detail': "Invalid year param, expected a number"})
+        else:
+            year, semester = semesters[0]['year'], semesters[0]['semester']
+        year = int(year)
+        types = set()
+        fields = {}
+        for lecture in Lecture.objects.filter(year=year, semester=semester):
+            course = lecture.course
+            types.add(course.type)
+            if not course.field:
+                continue
+            field, field_detail = course.field.split('-')
+            if field not in fields:
+                fields[field] = set()
+            fields[field].add(field_detail)
+        return Response(dict(
+            colleges=colleges,
+            semesters=semesters,
+            types=types,
+            fields=fields,
+        ))
+
+
 class RecommendView(generics.ListAPIView):
     serializer_class = RecommendedTimeTableSerializer
     permission_classes = (IsAuthenticated, IsStudent)
