@@ -337,35 +337,46 @@ class StaticInformation(generics.RetrieveAPIView):
         return []
 
     def retrieve(self, request, *args, **kwargs):
-        colleges = CollegeSerializer(College.objects.all(), many=True).data
-        semesters = SemesterList.get_queryset(SemesterList())
-        if not semesters:
-            return Response({'detail': "No information. Please run a crawling task."})
         params = self.request.query_params
         if 'year' in params and 'semester' in params:
             year, semester = params.get('year'), params.get('semester')
             if not year.isnumeric():
                 return Response({'detail': "Invalid year param, expected a number"})
+
+            lectures = Lecture.objects.filter(year=year, semester=semester)
+            types = set()
+            for t in lectures.values_list('course__type').distinct():
+                types.add(t[0])
+            fields = {}
+            for f in lectures.values_list('course__field').distinct():
+                if not f[0]:
+                    continue
+                f, fd = f[0].split('-')
+                if f not in fields:
+                    fields[f] = set()
+                fields[f].add(fd)
+            return Response(dict(
+                types=types,
+                fields=fields,
+            ))
         else:
-            year, semester = semesters[0]['year'], semesters[0]['semester']
-        year = int(year)
-        types = set()
-        fields = {}
-        for lecture in Lecture.objects.filter(year=year, semester=semester):
-            course = lecture.course
-            types.add(course.type)
-            if not course.field:
-                continue
-            field, field_detail = course.field.split('-')
-            if field not in fields:
-                fields[field] = set()
-            fields[field].add(field_detail)
-        return Response(dict(
-            colleges=colleges,
-            semesters=semesters,
-            types=types,
-            fields=fields,
-        ))
+            colleges = CollegeSerializer(College.objects.all(), many=True).data
+            years = {}
+            for year, semester in Lecture.objects.values_list('year', 'semester').distinct():
+                if year not in years:
+                    years[year] = [None]*4
+                for i, s in enumerate(settings.SEMESTER_CHOICES):
+                    if s[0] == semester:
+                        years[year][3-i] = semester
+            years_semesters = []
+            for year in sorted(years, reverse=True):
+                for semester in years[year]:
+                    if semester:
+                        years_semesters.append(dict(year=year, semester=semester))
+            return Response(dict(
+                colleges=colleges,
+                semesters=years_semesters,
+            ))
 
 
 class RecommendView(generics.ListAPIView):
