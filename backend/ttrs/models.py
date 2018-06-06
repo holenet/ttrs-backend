@@ -60,12 +60,12 @@ class Lecture(models.Model):
 
     rating = models.FloatField(default=0)
 
-    # def save(self, *args, **kwargs):
-    #     if self.evaluations.count():
-    #         self.rating = sum([e.rate for e in self.evaluations.all()])/self.evaluations.count()
-    #     else:
-    #         self.rating = 0
-    #     super(Lecture, self).save(*args, **kwargs)
+    def update_rating(self):
+        if self.evaluations.count():
+            self.rating = sum([e.rate for e in self.evaluations.all()])/self.evaluations.count()
+        else:
+            self.rating = 0
+        self.save()
 
     @staticmethod
     def have_same_course(lectures):
@@ -124,13 +124,17 @@ class Evaluation(models.Model):
     like_it = models.ManyToManyField('ttrs.Student', related_name='like_its', blank=True)
 
     def save(self, *args, **kwargs):
-        print('asdf')
         if self.lecture.evaluations.count():
             self.lecture.rating = self.lecture.evaluations.aggregate(Avg('rate'))['rate__avg']
         else:
             self.lecture.rating = 0
-        self.lecture.save()
         models.Model.save(self, *args, **kwargs)
+        self.lecture.update_rating()
+
+    def delete(self, *args, **kwargs):
+        lecture = self.lecture
+        models.Model.delete(self, *args, **kwargs)
+        lecture.update_rating()
 
     def __str__(self):
         return '{}-{}'.format(self.lecture, self.author)
