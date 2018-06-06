@@ -92,14 +92,6 @@ class TimeSlotSerializer(serializers.ModelSerializer):
 class LectureSerializer(serializers.ModelSerializer):
     course = CourseSerializer()
     time_slots = TimeSlotSerializer(many=True)
-    rating = serializers.SerializerMethodField()
-
-    def get_rating(self, obj):
-        evaluations = obj.evaluations.all()
-        if len(evaluations):
-            return sum([e.rate for e in evaluations])/len(evaluations)
-        else:
-            return 0
 
     class Meta:
         model = Lecture

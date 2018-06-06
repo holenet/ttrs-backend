@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User, UserManager
 from django.db import models
 from django.conf import settings
-from django.db.models import Lookup, Field
+from django.db.models import Lookup, Field, Avg
 
 
 @Field.register_lookup
@@ -58,6 +58,15 @@ class Lecture(models.Model):
     instructor = models.CharField(max_length=20)
     note = models.TextField(blank=True)
 
+    rating = models.FloatField(default=0)
+
+    # def save(self, *args, **kwargs):
+    #     if self.evaluations.count():
+    #         self.rating = sum([e.rate for e in self.evaluations.all()])/self.evaluations.count()
+    #     else:
+    #         self.rating = 0
+    #     super(Lecture, self).save(*args, **kwargs)
+
     @staticmethod
     def have_same_course(lectures):
         codes = set()
@@ -113,6 +122,15 @@ class Evaluation(models.Model):
     rate = models.PositiveSmallIntegerField()
     comment = models.TextField()
     like_it = models.ManyToManyField('ttrs.Student', related_name='like_its', blank=True)
+
+    def save(self, *args, **kwargs):
+        print('asdf')
+        if self.lecture.evaluations.count():
+            self.lecture.rating = self.lecture.evaluations.aggregate(Avg('rate'))['rate__avg']
+        else:
+            self.lecture.rating = 0
+        self.lecture.save()
+        models.Model.save(self, *args, **kwargs)
 
     def __str__(self):
         return '{}-{}'.format(self.lecture, self.author)
