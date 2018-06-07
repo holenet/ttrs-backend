@@ -131,6 +131,8 @@ class EvaluationDetailSerializer(EvaluationSerializer):
 
 
 class TimeTableSerializer(serializers.ModelSerializer):
+    credit_sum = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = TimeTable
         fields = '__all__'
@@ -159,6 +161,9 @@ class TimeTableSerializer(serializers.ModelSerializer):
         if hasattr(self, 'semester'):
             validated_data['semester'] = self.semester
         return super(TimeTableSerializer, self).create(validated_data)
+
+    def get_credit_sum(self, obj):
+        return sum([lecture.course.credit for lecture in obj.lectures.all()])
 
 
 class MyTimeTableSerializer(TimeTableSerializer):

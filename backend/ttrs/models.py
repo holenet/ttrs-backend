@@ -122,6 +122,7 @@ class Evaluation(models.Model):
     rate = models.PositiveSmallIntegerField()
     comment = models.TextField()
     like_it = models.ManyToManyField('ttrs.Student', related_name='like_its', blank=True)
+    evaluated_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
         if self.lecture.evaluations.count():
