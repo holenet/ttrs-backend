@@ -8,5 +8,5 @@ script:
   - python3 backend/manage.py makemigrations ttrs
   - python3 backend/manage.py makemigrations
   - python3 backend/manage.py migrate
-  - coverage run --source='.' --omit='*/migrations/*' backend/manage.py test ttrs
+  - coverage run --source='.' --omit='*/migrations/*' backend/manage.py test ttrs manager
   - coverage report -m
