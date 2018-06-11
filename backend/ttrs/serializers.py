@@ -100,7 +100,7 @@ class LectureSerializer(serializers.ModelSerializer):
 
 class EvaluationSerializer(serializers.ModelSerializer):
     author = serializers.StringRelatedField()
-    
+
     class Meta:
         model = Evaluation
         fields = '__all__'
@@ -185,7 +185,7 @@ class BookmarkedTimeTableSerializer(TimeTableSerializer):
 
 class ReceivedTimeTableSerializer(TimeTableSerializer):
     sender = serializers.StringRelatedField()
-    
+
     class Meta(TimeTableSerializer.Meta):
         model = ReceivedTimeTable
         read_only_fields = TimeTableSerializer.Meta.read_only_fields+('sender', 'received_at')
