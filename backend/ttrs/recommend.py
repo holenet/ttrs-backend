@@ -191,39 +191,6 @@ def upper_bound(lectures, info):
     return get_score(lectures, info) + 0
 
 
-def build_timetable(info, student):
-    lectures = get_lectures(info['expected_credit'], Lecture.objects.filter(year=info['year'], semester=info['semester']), [], info)
-    time_table = RecommendedTimeTable(owner=student, title='table', year=info['year'], semester=info['semester'])
-    time_table.save()
-    for lecture in lectures:
-        time_table.lectures.add(lecture)
-    return time_table
-
-
-def get_lectures(remain_credit, remain_lectures, lectures, info):
-    if -3 < remain_credit < 3:
-        return lectures
-    while True:
-        if random.randint(1, 20) == 1:
-            return lectures
-        lecture = get_random_object(remain_lectures, info['min_id'], info['max_id'])
-        lectures.append(lecture)
-        if not Lecture.have_same_course(lectures) and not Lecture.do_overlap(lectures):
-            break
-        lectures = lectures[:-1]
-    remain_lectures.exclude(id=lecture.id)
-    remain_credit -= lecture.course.credit
-    return get_lectures(remain_credit, remain_lectures, lectures, info)
-
-
-def get_random_object(objects, min_id, max_id):
-    while True:
-        pk = random.randint(min_id, max_id)
-        instance = objects.filter(pk=pk).first()
-        if instance:
-            return instance
-
-
 def get_score(lectures, info):
     total_score = 0
     total_credit = 0
