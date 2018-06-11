@@ -185,6 +185,8 @@ class StudentViewTest(BaseTestCase):
 class CourseViewTest(BaseTestCase):
     def test_list(self):
         response = self.get_test('/ttrs/courses/')
+        response = self.get_test('/ttrs/courses/?order_by=credit')
+        response = self.get_test('/ttrs/courses/?order_by=asdf')
 
     def test_retrieve(self):
         response = self.get_test('/ttrs/courses/1/')
@@ -439,3 +441,9 @@ class RecommendViewTest(BaseTestCase):
     def test_retrieve(self):
         response = self.get_test('/ttrs/recommends/')
         response = self.get_test('/ttrs/recommends/?year=2018&semester=1학기')
+        response = self.get_test('/ttrs/recommends/?year=2017&semester=1학기&expected_credit=3')
+
+class StaticViewTest(BaseTestCase):
+    def test_retrieve(self):
+        response = self.get_test('/ttrs/static-information/')
+        response = self.get_test('/ttrs/static-information/?year=2018&semester=1학기')
