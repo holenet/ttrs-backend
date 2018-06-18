@@ -290,9 +290,9 @@ def init(options: QueryDict, student: Student):
 
     # Load lectures and filter by blocks option
     while True:
-        whole_lectures, whole_compatible = load()
+        whole_lectures, whole_compatible = load(info['year'], info['semester'])
         if whole_lectures is None or whole_compatible is None:
-            save()
+            save(info['year'], info['semester'])
         else:
             break
     available = []
@@ -314,12 +314,12 @@ def init(options: QueryDict, student: Student):
     return lectures, info
 
 
-def save():
+def save(year, semester):
     """
     Save list of SimpleLecture object to external resource (using pickle).
     """
-    lectures = [SimpleLecture(lecture) for lecture in Lecture.objects.filter(year=2018, semester='1학기') if lecture.time_slots.count() > 0]
-    with open('lectures.pickle', 'wb') as f:
+    lectures = [SimpleLecture(lecture) for lecture in Lecture.objects.filter(year=year, semester=semester) if lecture.time_slots.count() > 0]
+    with open('lectures{}{}.pickle'.format(year, semester), 'wb') as f:
         pickle.dump(lectures, f)
     distinct = []
     for i, lecture1 in enumerate(lectures):
@@ -330,19 +330,19 @@ def save():
                 indices.append(j)
         distinct.append(indices)
         print('{}/{}'.format(i, len(lectures)), len(indices), len(indices)*100//len(lectures))
-    with open('compatible.pickle', 'wb') as f:
+    with open('compatible{}{}.pickle'.format(year, semester), 'wb') as f:
         pickle.dump(distinct, f)
 
 
-def load():
+def load(year, semester):
     """
     Load list of SimpleLecture object and their compatible lecture list
     from external resource  (using pickle).
     """
     try:
-        with open('lectures.pickle', 'rb') as f:
+        with open('lectures{}{}.pickle'.format(year, semester), 'rb') as f:
             whole_lectures = pickle.load(f)
-        with open('compatible.pickle', 'rb') as f:
+        with open('compatible{}{}.pickle'.format(year, semester), 'rb') as f:
             whole_compatible = pickle.load(f)
     except Exception as e:
         print(e)
