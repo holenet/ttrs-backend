@@ -22,7 +22,7 @@ from .serializers import StudentSerializer, CollegeSerializer, DepartmentSeriali
 from .models import Student, College, Department, Major, Course, Lecture, Evaluation, MyTimeTable, BookmarkedTimeTable, \
     ReceivedTimeTable, TimeTable
 
-from .recommend import recommend
+from .recommend2 import recommend, contains, get_time_slot_set
 
 
 class FilterOrderAPIView(generics.GenericAPIView):
@@ -125,6 +125,18 @@ class LectureList(FilterOrderAPIView, generics.ListAPIView):
     serializer_class = LectureSerializer
     permission_classes = (IsAuthenticated,)
     pagination_class = LimitOffsetPagination
+
+    def filter_queryset(self, queryset):
+        queryset = FilterOrderAPIView.filter_queryset(self, queryset)
+        if 'blocks' not in self.request.query_params:
+            return queryset
+        blocks = self.request.query_params.get('blocks')
+        blocks = [[list(map(int, slot.split(':'))) for slot in slots.split(',')] if slots else [] for slots in blocks.split('|')]
+        lectures = []
+        for lecture in queryset.all():
+            if contains(blocks, get_time_slot_set(lecture)):
+                lectures.append(lecture)
+        return lectures
 
 
 class LectureDetail(generics.RetrieveAPIView):
@@ -397,4 +409,8 @@ class RecommendView(generics.ListAPIView):
     def get_queryset(self):
         options = self.request.query_params.copy()
         student = Student.objects.get_by_natural_key(self.request.user.username)
-        return recommend(options, student)
+        from time import time as current
+        last = current()
+        recommends = recommend(options, student)
+        print(current() - last, 's')
+        return recommends
