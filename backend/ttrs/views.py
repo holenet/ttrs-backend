@@ -22,7 +22,7 @@ from .serializers import StudentSerializer, CollegeSerializer, DepartmentSeriali
 from .models import Student, College, Department, Major, Course, Lecture, Evaluation, MyTimeTable, BookmarkedTimeTable, \
     ReceivedTimeTable, TimeTable
 
-from .recommend import recommend
+from .recommend2 import recommend
 
 
 class FilterOrderAPIView(generics.GenericAPIView):
@@ -397,4 +397,8 @@ class RecommendView(generics.ListAPIView):
     def get_queryset(self):
         options = self.request.query_params.copy()
         student = Student.objects.get_by_natural_key(self.request.user.username)
-        return recommend(options, student)
+        from time import time as current
+        last = current()
+        recommends = recommend(options, student)
+        print(current() - last, 's')
+        return recommends
