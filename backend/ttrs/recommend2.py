@@ -58,7 +58,7 @@ class SimpleLecture:
         :param info: information about the recommendation
         """
         # lecture score calculation
-        score = 0
+        score = -2
 
         # student grade
         # if self.type not in ('전선', '전필') or self.department and self.department == info['student_department']:
@@ -366,7 +366,7 @@ def rank_lecture_set(lectures: List[SimpleLecture], info: dict):
     for count in range(10000):
         while contexts:
             context = heapq.heappop(contexts)
-            if context.score >= max_score:
+            if context.score + 10 >= max_score:
                 break
         else:
             break
