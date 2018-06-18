@@ -371,7 +371,7 @@ def rank_lecture_set(lectures: List[SimpleLecture], info: dict):
         max_score = max(max_score, final_score)
         ranks.append((context, final_score))
 
-        print(count, final_score, context)
+        # print(count, final_score, context)
         for lecture in context.lectures[-1].next_lectures:
             if context.compatible(lecture) and context.credit + lecture.credit <= info['expected_credit']:
                 heapq.heappush(contexts, Context(context, lecture, info))
