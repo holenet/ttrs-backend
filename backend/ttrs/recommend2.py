@@ -142,8 +142,7 @@ class Context:
 
     def get_expected_score(self, info):
         # Expected table score calculation based on current state
-        past_score = 0
-        future_score = 0
+        table_score = 0
         lectures = self.lectures
 
         # serial lectures
@@ -161,7 +160,7 @@ class Context:
                     serial_score += serial
                     serial = 0
             serial_score += serial
-        past_score -= serial_score * info['serial_lectures_weight']
+        table_score -= serial_score * info['serial_lectures_weight']
 
         # credit(type)
         credit_score = 0
@@ -180,11 +179,9 @@ class Context:
             credit_score += (-remaining_credit ** 2) * info['credit_weight']
         if remaining_type_credit > 0:
             credit_score += ((remaining_type_credit / count) ** 2) * count * info['type_weight']
-        past_score -= credit_score
-        # if remaining_credit > 0:
-        #     future_score -= remaining_credit ** 2
+        table_score -= credit_score
 
-        return past_score + future_score
+        return table_score
 
     def get_final_score(self, info):
         # Final table score calculation
