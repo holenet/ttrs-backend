@@ -22,7 +22,7 @@ from .serializers import StudentSerializer, CollegeSerializer, DepartmentSeriali
 from .models import Student, College, Department, Major, Course, Lecture, Evaluation, MyTimeTable, BookmarkedTimeTable, \
     ReceivedTimeTable, TimeTable
 
-from .recommend2 import recommend, contains, get_time_slot_set
+from .recommend2 import recommend, contains, load
 
 
 class FilterOrderAPIView(generics.GenericAPIView):
@@ -127,16 +127,16 @@ class LectureList(FilterOrderAPIView, generics.ListAPIView):
     pagination_class = LimitOffsetPagination
 
     def filter_queryset(self, queryset):
-        queryset = FilterOrderAPIView.filter_queryset(self, queryset)
-        if 'blocks' not in self.request.query_params:
-            return queryset
-        blocks = self.request.query_params.get('blocks')
-        blocks = [[list(map(int, slot.split(':'))) for slot in slots.split(',')] if slots else [] for slots in blocks.split('|')]
-        lectures = []
-        for lecture in queryset.all():
-            if contains(blocks, get_time_slot_set(lecture)):
-                lectures.append(lecture)
-        return lectures
+        if 'blocks' in self.request.query_params:
+            blocks = self.request.query_params.get('blocks')
+            blocks = [[list(map(int, slot.split(':'))) for slot in slots.split(',')] if slots else [] for slots in blocks.split('|')]
+            whole_lectures, ignore = load(int(self.request.query_params.get('year')), self.request.query_params.get('semester'))
+            lectures = []
+            for lecture in whole_lectures:
+                if contains(blocks, lecture.time_slot_set):
+                    lectures.append(lecture.id)
+            queryset = Lecture.objects.filter(pk__in=lectures)
+        return FilterOrderAPIView.filter_queryset(self, queryset)
 
 
 class LectureDetail(generics.RetrieveAPIView):
