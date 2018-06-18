@@ -318,6 +318,9 @@ def init(options: QueryDict, student: Student):
 
 
 def save():
+    """
+    Save list of SimpleLecture object to external resource (using pickle).
+    """
     lectures = [SimpleLecture(lecture) for lecture in Lecture.objects.filter(year=2018, semester='1학기') if lecture.time_slots.count() > 0]
     with open('lectures.pickle', 'wb') as f:
         pickle.dump(lectures, f)
@@ -337,7 +340,7 @@ def save():
 def load():
     """
     Load list of SimpleLecture object and their compatible lecture list
-    from external resource.
+    from external resource  (using pickle).
     """
     try:
         with open('lectures.pickle', 'rb') as f:
@@ -363,30 +366,18 @@ def rank_lecture_set(lectures: List[SimpleLecture], info: dict):
         heapq.heappush(contexts, Context(base, lecture, info))
     ranks = []
     max_score = -1000000000
-    for count in range(10000):
-        while contexts:
-            context = heapq.heappop(contexts)
-            if context.score >= max_score:
-                break
-        else:
+    for count in range(500):
+        if not contexts:
             break
+        context = heapq.heappop(contexts)
         final_score = context.get_final_score(info)
         max_score = max(max_score, final_score)
         ranks.append((context, final_score))
 
-        # if count % 10 == 9:
         print(count, final_score, context)
-
-        next_contexts = []
         for lecture in context.lectures[-1].next_lectures:
-            if context.compatible(lecture) and context.credit + lecture.credit <= info['expected_credit'] + 3:
-                # heapq.heappush(contexts, Context(context, lecture, info))
-                next_context = Context(context, lecture, info)
-                heapq.heappush(next_contexts, (next_context.score, next_context))
-                if len(next_contexts) > len(context.lectures[-1].next_lectures) // 10:
-                    heapq.heappop(next_contexts)
-        for next_context in next_contexts:
-            heapq.heappush(contexts, next_context[1])
+            if context.compatible(lecture) and context.credit + lecture.credit <= info['expected_credit']:
+                heapq.heappush(contexts, Context(context, lecture, info))
     return ranks
 
 
